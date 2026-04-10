@@ -14,14 +14,14 @@ export const profileService = {
     formData.append("phone", data.phone);
     formData.append("role", data.role);
     formData.append("user_id", String(data.user_id));
-    console.log("Updating profile with data:", data);
-    console.log("Updating profile with data:", Array.from(formData.entries()));
     if (data.profile_pic) {
       formData.append("profile_pic", data.profile_pic);
     }
+    console.log("Updating profile with data:", data);
+    console.log("Updating profile with formData:", Array.from(formData.entries()));
     return apiClient
-      .put(PROFILE.UPDATE, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      .post(PROFILE.UPDATE, formData, {
+        headers: { "Content-Type": undefined },
       })
       .then((r) => r.data);
   },

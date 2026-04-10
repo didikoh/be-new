@@ -24,7 +24,7 @@ return function (App $app): void {
         $group->post('/bookings', [BookingController::class, 'store']);
         $group->post('/bookings/frozen', [BookingController::class, 'storeFrozen']);
 
-        $group->put('/profile', [ProfileController::class, 'update']);
+        $group->post('/profile', [ProfileController::class, 'update']);
         $group->put('/profile/password', [ProfileController::class, 'changePassword']);
         $group->put('/profile/password/admin', [ProfileController::class, 'adminChangePassword']);
 

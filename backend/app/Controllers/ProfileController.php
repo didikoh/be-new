@@ -24,7 +24,7 @@ class ProfileController extends Controller
         $name = (string) ($body['name'] ?? '');
         $birthday = (string) ($body['birthday'] ?? '');
 
-        $profilePicPath = $body['profile_pic'] ?? null;
+        $profilePicPath = null;
 
         $uploadedFiles = $request->getUploadedFiles();
         if (isset($uploadedFiles['profile_pic']) && $uploadedFiles['profile_pic']->getError() === UPLOAD_ERR_OK) {

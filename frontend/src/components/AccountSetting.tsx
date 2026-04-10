@@ -156,7 +156,8 @@ const AccountSetting = ({ setSettingOpen }: any) => {
             <input
               type="text"
               placeholder={t("accountSetting.uploadAvatarPlaceholder")}
-              defaultValue={profilePic ? profilePic.name : ""}
+              value={profilePic ? profilePic.name : ""}
+              readOnly
               onClick={() => fileInputRef.current?.click()}
               className={styles["form-input"]}
             />
