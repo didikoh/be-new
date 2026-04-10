@@ -1,111 +1,65 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+html,
+body {
+  margin: 0;
+  height: 100svh;
+  width: 100svw;
+  overflow-x: hidden; /* 防止横向滚动 */
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "微软雅黑", "Heiti SC", "华文黑体", "STHeiti", "SimSun",
+    "宋体", "WenQuanYi Micro Hei", "sans-serif";
+
+  width: 100%;
+  height: 100%;
+
+  /* 基础色系 */
+  --primary-color: #a89f91; /* 柔和米灰 - 主色调 */
+  --secondary-color: #dcd6cf; /* 暖灰米色 - 次要背景 */
+  --tertiary-color: #f5f3ef; /* 最浅灰米 - 页面背景 */
+
+  /* 文字与线条 */
+  --text-color: #4b463e; /* 深褐文字 */
+  --text-muted: #7f786e; /* 淡文字色 */
+  --border-color: #c5beb3; /* 浅灰棕边框 */
+
+  /* 点缀与按钮 */
+  --accent-color: #b07d62; /* 木色调按钮/高亮 */
+  --accent-light: #d6b8a0; /* 按钮 hover / 背景 */
+  --success-color: #809974; /* 抹茶绿 - 成功信息 */
+  --warning-color: #d8a363; /* 亚麻橘 - 警告 */
+  --error-color: #b66b60; /* 烧砖红 - 错误 */
+
+  /* 状态背景 */
+  --background-light: #f7f6f3; /* 页面浅背景 */
+  --background-dark: #ebe6de; /* 页面深背景 */
+
+  /* 透明层次感 */
+  --overlay-color: rgba(75, 70, 62, 0.45); /* 用于hover遮罩或卡片投影感 */
+}
+
+button {
+  cursor: pointer;
+}
+
+.construction {
   display: flex;
+  /* inset: 0; */
+  height: 100svh;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
   flex-direction: column;
-  box-sizing: border-box;
-}
+  gap: 50px;
 
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  button {
+    border: 1px solid var(--primary-color);
+    padding: 5px 10px;
+    font-size: 1.3rem;
+    border-radius: 10px;
+    background-color: #fbecfb;
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }

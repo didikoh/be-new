@@ -1,0 +1,25 @@
+{
+    "title": "Login BeStudio",
+    "phone": "Phone Number",
+    "password": "Password",
+    "joinUs": "Welcome to join us! Register here",
+    "login": "Login",
+    "forgetPassword": "Forget Password?",
+    "validatePhone": "Please enter a valid phone number!",
+    "validatePassword": "Password must be at least 8 characters!",
+    "FP": {
+        "title": "Forget Password",
+        "contact": "Contact Admin"
+    },
+    "register": {
+        "title": "Account Registration",
+        "name": "Name",
+        "phone": "Phone Number",
+        "birthday": "Birthday",
+        "password": "Password (min 8 characters)",
+        "confirmPassword": "Confirm Password",
+        "uploadAvatar": "Upload Avatar (optional)",
+        "submit": "Submit",
+        "validateConfirmPassword": "Passwords do not match, please re-enter"
+    }
+}

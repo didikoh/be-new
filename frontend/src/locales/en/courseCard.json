@@ -1,0 +1,16 @@
+{
+    "alreadyBooked": "Booked",
+    "bookNow": "Book Now",
+    "purchaseNow": "Purchase Now",
+    "bookedCount": "Bookings",
+    "regularPrice": "Regular",
+    "memberPrice": "Member",
+    "location": "Location:",
+    "difficulty": "Difficulty",
+    "minBook": "Minimum bookings required",
+    "locationDefault": "No location assigned",
+    "view": "VIEW",
+    "coach": {
+        "title": "My Courses"
+    }
+}

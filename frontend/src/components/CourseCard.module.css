@@ -1,0 +1,79 @@
+.course-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  height: auto;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.course-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.course-overlay {
+  position: relative;
+  background: linear-gradient(to right, var(--secondary-color), transparent);
+  color: var(--text-color);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+.course-time {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.course-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.course-info {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.course-difficulty {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.star {
+  color: #000;
+  margin-left: 4px;
+  font-size: 16px;
+}
+
+.star-filled {
+  color: gold;
+  margin-left: 4px;
+  font-size: 16px;
+}
+
+.course-attend {
+  font-size: 14px;
+}
+
+.book-button {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}

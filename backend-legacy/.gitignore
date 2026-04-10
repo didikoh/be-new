@@ -1,0 +1,5 @@
+# 忽略上传文件
+uploads/
+files/
+storage/uploads/
+vendor/**

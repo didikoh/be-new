@@ -1,0 +1,21 @@
+{
+    "joinUsWhatsapp": "你好，我想加入会员",
+    "contactAdmin": "管理员",
+    "rest": "休息中",
+    "open": "营业中",
+    "operationDate": "周一至周五",
+    "contact": "联系方式",
+    "address": "场馆地址",
+    "section2": {
+        "title": "变得更好?",
+        "joinUs": "加入我们!",
+        "balance": "余额",
+        "point": "积分"
+    },
+    "section3/4": {
+        "title3": "我的预约",
+        "title4": "今日课程",
+        "noData3": "暂无预约记录",
+        "noData4": "今日暂无课程"
+    }
+}

@@ -1,0 +1,69 @@
+.admin-site-container {
+  padding: 32px 24px;
+  width: 100%;
+  margin: auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background-dark);
+  box-sizing: border-box;
+  min-height: 100vh;
+  }
+  
+  .admin-site-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  
+  .booking-table th,
+  .booking-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    text-align: left;
+  }
+  
+  .status {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  
+  .status.pending {
+    color: #f0ad4e;
+  }
+  
+  .status.accepted {
+    color: #4caf50;
+  }
+  
+  .status.rejected {
+    color: #f44336;
+  }
+  
+  .btn {
+    margin-right: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn.accept {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .btn.reject {
+    background-color: #f44336;
+    color: white;
+  }
+  

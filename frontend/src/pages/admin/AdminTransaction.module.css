@@ -1,0 +1,66 @@
+.admin-transaction-container {
+  padding: 32px 24px;
+  width: 100%;
+  margin: auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background-dark);
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.admin-transaction-container h2 {
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.transaction-table th,
+.transaction-table td {
+  padding: 14px 18px;
+  text-align: center;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 14px;
+}
+
+.transaction-table th {
+  background-color: #f0f4ff;
+  color: #333;
+}
+
+.transaction-table tr:hover {
+  background-color: #f5faff;
+}
+
+.income {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.activate {
+  color: #a7a728;
+  font-weight: bold;
+}
+
+.expense {
+  color: #d9534f;
+  font-weight: bold;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  background-color: var(--accent-light);
+}

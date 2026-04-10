@@ -1,0 +1,16 @@
+{
+    "alreadyBooked": "已预约",
+    "bookNow": "立即预约",
+    "purchaseNow": "立即购买",
+    "bookedCount": "已预约人数",
+    "regularPrice": "普通价",
+    "memberPrice": "会员价",
+    "location": "课室:",
+    "difficulty": "课程难度",
+    "minBook": "需开班人数",
+    "locationDefault": "暂无课室",
+    "view": "查看课程",
+    "coach": {
+        "title": "我的课程"
+    }
+}

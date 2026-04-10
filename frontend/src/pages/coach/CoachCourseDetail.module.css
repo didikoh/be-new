@@ -1,0 +1,254 @@
+.detailContainer {
+  font-family: sans-serif;
+  background-color: var(--background-light);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to bottom, var(--text-color), transparent);
+  position: fixed;
+  top: 0;
+  color: white;
+  width: 100%;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  font-size: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  width: 10%;
+  padding: 10px;
+  z-index: 2;
+}
+
+.detailHeaderText {
+  position: absolute;
+  font-weight: bold;
+  font-size: 18px;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.detailBanner img.detailBg {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.detailContent {
+  padding: 16px;
+  flex: 1;
+  margin-bottom: 62px;
+}
+
+.detailCard {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.courseTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  h2 {
+    margin: 0;
+  }
+}
+
+.courseTag {
+  background-color: #00b7a2;
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 8px;
+}
+
+.courseShare {
+  font-size: 14px;
+  color: #999;
+  cursor: pointer;
+}
+
+.courseMeta {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 12px;
+  font-size: 1rem;
+}
+
+.courseMetaItem{
+  text-align: center;
+}
+
+.instructorInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.descRow {
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.details .infoRow {
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detailFooter {
+  background-color: white;
+  border-top: 1px solid #eee;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box; /*  */
+}
+
+.detailBookButton {
+  width: 100%;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.peopleCount {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  button {
+    border: solid 1px var(--primary-color);
+    padding: 3px;
+    display: flex;
+    border-radius: 5px;
+    background-color: var(--background-dark);
+  }
+}
+
+.bookPopup {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popupContent {
+  background: white;
+  width: 85%;
+  max-width: 360px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.popupContent h2 {
+  margin-top: 0;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.popupContent p {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.popupBtns {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.popupBtns button {
+  flex: 1;
+  margin: 0 4px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.popupBtns button:first-child {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.popupBtns button:last-child {
+  background-color: #eee;
+  color: #333;
+}
+
+.bookedStudents {
+  margin-top: 20px;
+}
+
+.studentList {
+  list-style: none;
+  padding: 0;
+}
+
+.studentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cancelBtn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.cancelPopup {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay-color); /* 可调成 rgba(0,0,0,0.5) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}

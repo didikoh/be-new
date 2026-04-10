@@ -1,0 +1,127 @@
+.login-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--primary-color);
+}
+.login-content {
+  position: relative;
+  width: 90%;
+  box-sizing: border-box;
+  padding: 15px 15px;
+  background-color: var(--secondary-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: var(--text-color);
+}
+
+.closeBtn {
+  position: absolute;
+  top:10px;
+  right: 10px;
+  border:none;
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.login-error {
+  color: var(--error-color);
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-input {
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--tertiary-color);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  border-color: var(--success-color);
+}
+
+.login-button {
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-code-row {
+  display: flex;
+  gap: 15px;
+}
+
+.code-input {
+  flex: 1;
+}
+
+.code-button {
+  background-color: var(--success-color);
+  color: white;
+  font-size: 14px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.form-bottom-row {
+  display: flex;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.forget-password-text {
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+}
+
+.register-text {
+  text-decoration: underline;
+  font-style: italic;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.remember-me {
+  display: flex;
+  gap: 2px;
+}
+
+.login-button.register {
+  background-color: var(--error-color);
+}

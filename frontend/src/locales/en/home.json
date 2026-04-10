@@ -1,0 +1,21 @@
+{
+    "joinUsWhatsapp": "Hi, I want to join member",
+    "contactAdmin": "Admin",
+    "rest": "Rest",
+    "open": "Open",
+    "operationDate": "Mon to Fri",
+    "contact": "Contact",
+    "address": "Address",
+    "section2": {
+        "title": "Be Better?",
+        "joinUs": "Join Us!",
+        "balance": "Balance",
+        "point": "Point"
+    },
+    "section3/4": {
+        "title3": "My Booking",
+        "title4": "Today's Course",
+        "noData3": "No Booking Record",
+        "noData4": "No Today's Course"
+    }
+}

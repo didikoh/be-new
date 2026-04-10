@@ -1,0 +1,148 @@
+/* 弹窗通用样式 */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-card {
+  background-color: white;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.popup-card h3 {
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.popup-card p {
+  margin: 6px 0;
+  color: #555;
+}
+
+.edit-row {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  margin-bottom: 10px;
+  label {
+    width: 20%;
+  }
+  .date-picker {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.labelOnly {
+  width: 100%;
+  font-size: 1.1rem;
+}
+
+.form-input {
+  width: 80%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.date-input{
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.popup-card.topup input {
+  margin-bottom: 20px;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm {
+  background-color: #4caf50;
+  color: white;
+}
+
+.close-btn {
+  background-color: #888;
+  color: white;
+}
+
+.popup-card p {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.btn {
+  padding: 6px 12px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn.delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn.confirm {
+  background-color: #4caf50;
+  color: white;
+}
+.btn.close-btn {
+  background-color: #888;
+  color: white;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.change-toggle {
+  font-size: 14px;
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 适合弹窗内的年月选择 */
+.select-year-month {
+  padding: 6px 12px;
+  border: 1px solid #d6d8db;
+  border-radius: 6px;
+  background: #fafbfc;
+  font-size: 15px;
+  margin-right: 8px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.select-year-month:focus {
+  border-color: #8eafe6;
+  background: #f0f6fd;
+}

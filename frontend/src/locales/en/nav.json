@@ -1,0 +1,12 @@
+{
+    "home": "Home",
+    "schedule": "Booking",
+    "account": "Account",
+    "coach_schedule": "Courses",
+    "coach_account": "Account",
+    "admin_home": "Home",
+    "admin_member": "Members",
+    "admin_transaction": "Transactions",
+    "admin_course": "Courses",
+    "admin_account": "Account"
+}

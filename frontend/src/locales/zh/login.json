@@ -1,0 +1,25 @@
+{
+  "title": "登录 BeStudio",
+  "phone": "电话号码",
+  "password": "密码",
+  "joinUs": "欢迎加入我们！点此注册",
+  "login": "登录",
+  "forgetPassword": "忘记密码？",
+  "validatePhone": "请输入正确的电话号码！",
+  "validatePassword": "密码至少8位，请重新输入!",
+  "FP": {
+    "title": "忘记密码",
+    "contact": "联络管理员"
+  },
+  "register": {
+    "title": "账号注册",
+    "name": "名字",
+    "phone": "电话号码",
+    "birthday": "生日",
+    "password": "密码（最少8位）",
+    "confirmPassword": "确认密码",
+    "uploadAvatar": "上传头像（可选）",
+    "submit": "提交",
+    "validateConfirmPassword": "两次密码不一致，请重新输入"
+  }
+}
