@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./AdminCourse.module.css";
 import clsx from "clsx";
-import axios from "axios";
 import { useAppContext } from "../../contexts/AppContext";
 import { useNavigate } from "react-router-dom";
 import { course_pics } from "../../assets/course/course";
@@ -9,6 +8,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import WalkIn from "../../components/admin/WalkIn";
 import { toLocalYMD } from "../../ultis/timeCheck";
+import { adminService } from "../../api/services/adminService";
 
 const filter = [{ name: "课程", value: "course" }];
 
@@ -75,25 +75,23 @@ const AdminCourse = () => {
   useEffect(() => {
     setLoading(true);
 
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/static-course.php`, {
-        action: "GET",
-      })
-      .then((res) => {
-        if (res.data.success) {
-          setStaticCourse(res.data.data);
+    adminService
+      .getCourseTypes()
+      .then((data) => {
+        if (data) {
+          setStaticCourse(data);
         }
       })
       .finally(() => setLoading(false));
 
-    axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}admin/get-coach.php`)
-      .then((res) => {
-        setCoachList(res.data.data);
-        if (res.data.data.length > 0) {
+    adminService
+      .getCoaches()
+      .then((data) => {
+        setCoachList(data);
+        if (data.length > 0) {
           setCourseForm((prev) => ({
             ...prev,
-            coach_id: res.data.data[0].id,
+            coach_id: String(data[0].id),
           }));
         } else {
           alert("请先添加教练");
@@ -108,12 +106,8 @@ const AdminCourse = () => {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}admin/get-course.php`
-      );
-      if (res.data.success) {
-        setCourses(res.data.courses);
-      }
+      const data = await adminService.getCourses();
+      setCourses(data);
     } catch (err) {
       console.error("获取课程失败", err);
     }
@@ -171,18 +165,17 @@ const AdminCourse = () => {
   };
 
   const handleDelete = async () => {
+    if (!editingId) return;
     setLoading(true);
-    await axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/remove-course.php`, {
-        course_id: editingId,
-      })
+    await adminService
+      .deleteCourse(editingId)
       .then((res) => {
-        if (res.data.success) {
+        if (res.success) {
           fetchCourses();
           setDeleteConfirm(false);
           handleClosePopup();
         } else {
-          alert(res.data.message);
+          alert(res.message);
         }
       });
     setLoading(false);
@@ -201,21 +194,17 @@ const AdminCourse = () => {
   };
 
   const handleSubmit = async () => {
-    const formData = new FormData();
-    const keys = Object.keys(courseForm) as (keyof typeof courseForm)[];
-
-    if (editingId !== -1 && editingId)
-      formData.append("id", editingId.toString());
-    for (const key of keys) {
-      formData.append(key, String(courseForm[key]));
-    }
     setLoading(true);
-    const res = await axios.post(
-      import.meta.env.VITE_API_BASE_URL + `admin/edit-course.php`,
-      formData
-    );
-
-    if (res.data.success) {
+    let res;
+    if (editingId !== -1 && editingId) {
+      res = await adminService.updateCourse(editingId, {
+        id: editingId,
+        ...courseForm,
+      });
+    } else {
+      res = await adminService.createCourse(courseForm);
+    }
+    if (res.success) {
       fetchCourses();
       handleClosePopup();
     }

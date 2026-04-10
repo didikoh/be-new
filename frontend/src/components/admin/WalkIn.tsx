@@ -1,10 +1,10 @@
-import axios from "axios";
 import styles from "./EditingUser.module.css";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
 import "react-datepicker/dist/react-datepicker.css";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
+import { adminService } from "../../api/services/adminService";
 
 const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
   const { setLoading } = useAppContext();
@@ -22,18 +22,15 @@ const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
     setLoading(true);
     console.log(selectedUserType);
     if (selectedUserType === "Guest") {
-      axios
-        .post(`${import.meta.env.VITE_API_BASE_URL}admin/walk-in.php`, {
-          course_id: selectedCourse.id,
-          head_count: headCount,
-        })
+      adminService
+        .walkIn({ course_id: selectedCourse.id, head_count: headCount })
         .then((res) => {
-          if (res.data.success) {
+          if (res.success) {
             alert("Walk In 成功");
             fetchCourses();
             setWalkInOpen(false);
           } else {
-            alert(res.data.message);
+            alert(res.message);
           }
         })
         .catch((err) => {
@@ -45,19 +42,15 @@ const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
         setLoading(false);
         return;
       }
-      axios
-        .post(`${import.meta.env.VITE_API_BASE_URL}admin/book2.php`, {
-          phone: phone,
-          course_id: selectedCourse.id,
-          head_count: headCount,
-        })
+      adminService
+        .bookByPhone({ phone, course_id: selectedCourse.id, head_count: headCount })
         .then((res) => {
-          if (res.data.success) {
+          if (res.success) {
             alert("新增报名成功");
             fetchCourses();
             setWalkInOpen(false);
           } else {
-            alert(res.data.message);
+            alert(res.message);
           }
         })
         .catch((err) => {
@@ -69,19 +62,13 @@ const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
   };
 
   const handleCheck = async () => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}admin/get-student-name.php`,
-      {
-        phone,
-      }
-    );
     setLoading(true);
-    const data = response.data;
-    if (data.success) {
-      setName(data.name);
+    const res = await adminService.lookupStudent({ phone });
+    if (res.success) {
+      setName(res.name ?? "");
       setChecked(true);
     } else {
-      alert(data.message);
+      alert(res.message);
     }
     setLoading(false);
   };

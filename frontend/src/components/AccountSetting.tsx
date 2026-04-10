@@ -1,12 +1,12 @@
 import React, { useRef, useState } from "react";
 import { CgClose } from "react-icons/cg";
 import styles from "./AccountSetting.module.css";
-import axios from "axios";
 import { useAppContext } from "../contexts/AppContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
+import { profileService } from "../api/services/profileService";
 
 const AccountSetting = ({ setSettingOpen }: any) => {
   const { t } = useTranslation("account");
@@ -29,45 +29,29 @@ const AccountSetting = ({ setSettingOpen }: any) => {
   const Icon2 = show2 ? FaEye : FaEyeSlash;
   const Icon3 = show3 ? FaEye : FaEyeSlash;
   const [responseMsg, setResponseMsg] = useState("");
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const [changePassword, setChangePassword] = useState(false);
 
   const handleSubmitEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append(
-      "birthday",
-      birthday ? birthday.toISOString().slice(0, 10) : ""
-    );
-    formData.append("phone", user.phone);
-    formData.append("action", "edit");
-    formData.append("role", user.role);
-    formData.append("user_id", user.user_id);
-
-    if (profilePic) {
-      formData.append("profile_pic", profilePic);
-    }
-
     try {
       setLoading(true);
-      const res = await axios.post(`${baseUrl}edit-profile.php`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true, // ✅ 必须加这个，才能存 session
+      const res = await profileService.update({
+        name,
+        birthday: birthday ? birthday.toISOString().slice(0, 10) : "",
+        phone: user.phone,
+        role: user.role,
+        user_id: user.user_id,
+        ...(profilePic ? { profile_pic: profilePic } : {}),
       });
-
-      if (res.data.success) {
+      if (res.success) {
         setSettingOpen(false);
         setRefreshKey((prev: any) => prev + 1);
       } else {
-        setResponseMsg(res?.data?.message || t("accountSetting.networkError"));
+        setResponseMsg(res.message ?? t("accountSetting.networkError"));
       }
     } catch (err: any) {
       console.error(err);
-      setResponseMsg(
-        err.response?.data?.message || t("accountSetting.networkError")
-      );
+      setResponseMsg(err.message ?? t("accountSetting.networkError"));
     }
     setLoading(false);
   };
@@ -84,31 +68,23 @@ const AccountSetting = ({ setSettingOpen }: any) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("action", "change_password");
-    formData.append("phone", user.phone);
-    formData.append("password_old", passwordOld);
-    formData.append("password_new", passwordNew);
-    formData.append("user_id", user.user_id);
-
     try {
       setLoading(true);
-      const res = await axios.post(`${baseUrl}edit-profile.php`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true, // ✅ 必须加这个，才能存 session
+      const res = await profileService.changePassword({
+        phone: user.phone,
+        password_old: passwordOld,
+        password_new: passwordNew,
+        user_id: user.user_id,
       });
-
-      if (res.data.success) {
+      if (res.success) {
         alert(t("accountSetting.passwordChangeSuccess"));
         logout();
       } else {
-        setResponseMsg(res?.data?.message || t("accountSetting.networkError"));
+        setResponseMsg(res.message ?? t("accountSetting.networkError"));
       }
     } catch (err: any) {
       console.error(err);
-      setResponseMsg(
-        err.response?.data?.message || t("accountSetting.networkError")
-      );
+      setResponseMsg(err.message ?? t("accountSetting.networkError"));
     }
     setLoading(false);
   };

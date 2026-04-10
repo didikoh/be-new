@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import styles from "./CourseDetail.module.css";
 import { useNavigate } from "react-router-dom";
 import { FaMinus, FaPlus } from "react-icons/fa";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { useUserContext } from "../contexts/UserContext";
+import { courseService } from "../api/services/courseService";
+import { bookingService } from "../api/services/bookingService";
 
 const CourseDetail = () => {
   const { t } = useTranslation("detail");
@@ -33,18 +34,15 @@ const CourseDetail = () => {
       return;
     }
     setLoading(true);
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}get-course-detail.php`, {
-        course_id: selectedCourseId,
-        student_id: user ? user.id : null, // 如果用户未登录，传 null 或不传
-      })
+    courseService
+      .getDetail(selectedCourseId)
       .then((res) => {
-        setSelectedCourse(res.data.course);
-        if (res.data.is_booked) {
-          setIsbooked(res.data.is_booked.status);
+        setSelectedCourse(res.course);
+        if (res.is_booked) {
+          setIsbooked(res.is_booked.status);
         }
-        if (res.data.head_count) {
-          setHeadCount(res.data.head_count);
+        if (res.head_count) {
+          setHeadCount(res.head_count);
         }
       })
       .finally(() => setLoading(false));
@@ -81,19 +79,15 @@ const CourseDetail = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}book2.php`,
-        {
-          student_id: user.id,
-          course_id: selectedCourse.id,
-          head_count: bookPeopleCount,
-        }
-      );
-      if (response.data.success) {
+      const response = await bookingService.create({
+        course_id: selectedCourse.id,
+        head_count: bookPeopleCount,
+      });
+      if (response.success) {
         alert(t("bookingSuccess"));
         setRefreshKey((prev: any) => prev + 1);
       } else {
-        alert(response.data.message);
+        alert(response.message);
       }
     } catch (error) {
       alert(t("bookingFailed"));

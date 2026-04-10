@@ -1,9 +1,9 @@
 import { useState } from "react";
-import axios from "axios";
 import styles from "./EditingUser.module.css";
 import clsx from "clsx";
 import { useAppContext } from "../../contexts/AppContext";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
+import { adminService } from "../../api/services/adminService";
 
 const Purchase = ({ setOpenPurchase }: any) => {
   const [phone, setPhone] = useState<any>("");
@@ -26,24 +26,20 @@ const Purchase = ({ setOpenPurchase }: any) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}admin/purchase-item.php`,
-        {
-          phone,
-          payment: parseFloat(payment),
-          description,
-        }
-      );
+      const res = await adminService.purchase({
+        phone,
+        payment: parseFloat(payment),
+        description,
+      });
 
-      const data = response.data;
-      if (data.success) {
+      if (res.success) {
         alert("✅ 购买成功！");
         setPhone("");
         setPayment("");
         setDescription("");
         setOpenPurchase(false);
       } else {
-        alert("❌ 错误：" + data.message);
+        alert("❌ 错误：" + res.message);
       }
     } catch (error) {
       console.error("请求失败:", error);
@@ -54,19 +50,13 @@ const Purchase = ({ setOpenPurchase }: any) => {
   };
 
   const handleCheck = async () => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}admin/get-student-name.php`,
-      {
-        phone,
-      }
-    );
     setLoading(true);
-    const data = response.data;
-    if (data.success) {
-      setName(data.name);
+    const res = await adminService.lookupStudent({ phone });
+    if (res.success) {
+      setName(res.name ?? "");
       setChecked(true);
     } else {
-      alert(data.message);
+      alert(res.message);
     }
     setLoading(false);
   };

@@ -5,11 +5,11 @@ import { useRef, useState } from "react";
 import PhoneInput from "react-phone-number-input/input";
 import { isValidPhoneNumber } from "react-phone-number-input/input";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import axios from "axios";
 import { useAppContext } from "../../contexts/AppContext";
 import { useTranslation } from "react-i18next";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
+import { authService } from "../../api/services/authService";
 
 const Register = () => {
   const { t } = useTranslation("login");
@@ -28,7 +28,6 @@ const Register = () => {
   const Icon = show ? FaEye : FaEyeSlash;
   const Icon2 = show2 ? FaEye : FaEyeSlash;
   const [responseMsg, setResponseMsg] = useState("");
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,31 +47,24 @@ const Register = () => {
       return;
     }
 
-    const formData = {
-      name,
-      phone,
-      birthday: birthday ? birthday.toISOString().slice(0, 10) : "", // 转 "yyyy-mm-dd"
-      password,
-      ...(profilePic && { profile_pic: profilePic }),
-    };
     setLoading(true);
     try {
-      const res = await axios.post(`${baseUrl}auth-register.php`, formData, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true, // ✅ 必须加这个，才能存 session
+      const res = await authService.register({
+        name,
+        phone,
+        birthday: birthday ? birthday.toISOString().slice(0, 10) : "",
+        password,
+        ...(profilePic && { profile_pic: profilePic }),
       });
-      if (res.data.success) {
-        setUser(res.data.profile);
+      if (res.success) {
+        setUser(res.profile);
       }
-      setResponseMsg(res.data.message);
+      setResponseMsg(res.message ?? "");
     } catch (err: any) {
       console.error(err);
-      setResponseMsg(err.response?.data?.message || "Network Error");
+      setResponseMsg(err.message ?? "Network Error");
     }
     setLoading(false);
-    // 提交后跳转或发请求
-    // alert("注册成功（模拟）！");
-    // navigate("/login");
   };
 
   return (

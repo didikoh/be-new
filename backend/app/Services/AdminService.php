@@ -72,15 +72,11 @@ class AdminService
     {
         $courses = Capsule::table('course_session as c')
             ->leftJoin('coach_list as co', 'c.coach_id', '=', 'co.id')
-            ->leftJoin('course_booking as b', function ($join) {
-                $join->on('c.id', '=', 'b.course_id')
-                    ->where('b.status', '!=', 'cancelled');
-            })
+            ->leftJoin(Capsule::raw('(SELECT course_id, SUM(head_count) AS booking_count FROM course_booking WHERE status != \'cancelled\' GROUP BY course_id) AS b'), 'c.id', '=', 'b.course_id')
             ->where('c.state', '!=', -1)
-            ->groupBy('c.id')
             ->orderBy('c.start_time', 'desc')
             ->limit(100)
-            ->select('c.*', 'co.name as coach_name', Capsule::raw('IFNULL(SUM(b.head_count), 0) AS booking_count'))
+            ->select('c.*', 'co.name as coach_name', Capsule::raw('IFNULL(b.booking_count, 0) AS booking_count'))
             ->get();
 
         return [

@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import styles from "./AdminTransaction.module.css";
-import axios from "axios";
 import { useAppContext } from "../../contexts/AppContext";
 import { useNavigate } from "react-router-dom";
 import popupStyle from "../../components/admin/EditingUser.module.css";
 import adminMemberStyles from "./AdminMember.module.css";
 import clsx from "clsx";
 import Purchase from "../../components/admin/Purchase";
+import { adminService } from "../../api/services/adminService";
+import type { Transaction } from "../../api/types/admin";
 
 const AdminTransaction: React.FC = () => {
   const { setLoading, user } = useAppContext();
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const navigate = useNavigate();
-  const [editingInvoice, setEditingInvoice] = useState<any>(null);
+  const [editingInvoice, setEditingInvoice] = useState<Transaction | null>(null);
   const [paymentValue, setPaymentValue] = useState(0);
-  const [selectedType, setSelectedType] = useState<any>("income");
+  const [selectedType, setSelectedType] = useState<string>("income");
   const [openPurchase, setOpenPurchase] = useState<boolean>(false);
 
   useEffect(() => {
@@ -25,22 +26,14 @@ const AdminTransaction: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/get-transaction.php`, {
-        type: selectedType,
-      })
-      .then((res) => {
-        setTransactions(res.data.data);
-      })
+    adminService
+      .queryTransactions({ type: selectedType })
+      .then((data) => setTransactions(data))
       .finally(() => setLoading(false));
   }, [selectedType]);
 
   const GenerateInvoice = (id: number) => {
-    window.open(
-      `${
-        import.meta.env.VITE_API_BASE_URL
-      }admin/generate-invoice.php?transaction_id=${id}`
-    );
+    window.open(adminService.getInvoiceUrl(id));
   };
 
   useEffect(() => {
@@ -50,14 +43,12 @@ const AdminTransaction: React.FC = () => {
   }, [editingInvoice]);
 
   const handleEditInvoice = () => {
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/edit-transaction.php`, {
-        transaction_id: editingInvoice.transaction_id,
-        payment: paymentValue,
-      })
+    if (!editingInvoice) return;
+    adminService
+      .updateTransactionPayment(editingInvoice.transaction_id, { payment: paymentValue })
       .then((res) => {
-        alert(res.data.message);
-        if (res.data.success) {
+        alert(res.message);
+        if (res.success) {
           window.location.reload();
         }
       })

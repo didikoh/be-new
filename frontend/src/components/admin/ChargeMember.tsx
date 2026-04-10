@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import popupStyle from "./EditingUser.module.css";
 import { useAppContext } from "../../contexts/AppContext";
-import axios from "axios";
 import clsx from "clsx";
 import DatePicker from "react-datepicker";
 import { parseISO, format } from "date-fns";
+import { adminService } from "../../api/services/adminService";
 
 const ChargeMember = ({
   chargingMember,
@@ -32,8 +32,8 @@ const ChargeMember = ({
       setLoading(false);
       return;
     }
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/topup.php`, {
+    adminService
+      .topup({
         id: chargingMember.id,
         amount: chargeAmount,
         valid_balance_to: validUntil,
@@ -41,11 +41,11 @@ const ChargeMember = ({
         payment: paymentValue,
       })
       .then((res) => {
-        if (res.data.success) {
+        if (res.success) {
           setRefresh((prev: any) => prev + 1);
           setChargingMember(null);
         } else {
-          alert("充值失败" + res.data.message);
+          alert("充值失败" + res.message);
         }
       })
       .catch(() => {

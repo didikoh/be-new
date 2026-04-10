@@ -1,4 +1,3 @@
-import axios from "axios";
 import styles from "./EditingUser.module.css";
 import clsx from "clsx";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
@@ -7,6 +6,8 @@ import { useAppContext } from "../../contexts/AppContext";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import { parseISO, format } from "date-fns";
+import { adminService } from "../../api/services/adminService";
+import { profileService } from "../../api/services/profileService";
 
 const EditingUser = ({
   setEditingUser,
@@ -40,21 +41,20 @@ const EditingUser = ({
       }
 
       setLoading(true);
-      axios
-        .post(`${import.meta.env.VITE_API_BASE_URL}admin/edit-user.php`, {
-          name: name,
-          phone: phone,
-          birthday: birthday,
+      adminService
+        .updateUser(editingUser.id, {
+          name,
+          phone,
+          birthday,
           role: selectedRole,
-          id: editingUser.id,
           user_id: editingUser.user_id,
         })
         .then((res) => {
-          if (res.data.success) {
+          if (res.success) {
             setRefresh((prev: any) => prev + 1);
             setEditingUser(null);
           } else {
-            alert(res.data.message);
+            alert(res.message);
           }
         })
         .catch((err) => alert(err))
@@ -64,21 +64,18 @@ const EditingUser = ({
 
   const handleDelete = async () => {
     setLoading(true);
-    await axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/delete-user.php`, {
-        user_id: editingUser.user_id,
-        role: selectedRole,
-      })
+    await adminService
+      .deleteUser(editingUser.user_id, selectedRole)
       .then((res) => {
-        if (res.data.success) {
+        if (res.success) {
           setRefresh((prev: any) => prev + 1);
           setEditingUser(null);
         } else {
-          alert(res.data.message);
+          alert(res.message);
         }
       })
       .catch((err) => alert(err));
-    setLoading(true);
+    setLoading(false);
   };
 
   const handleChangePassword = () => {
@@ -92,23 +89,19 @@ const EditingUser = ({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("action", "admin_change_password");
-    formData.append("user_id", editingUser.user_id);
-    formData.append("role", selectedRole);
-    formData.append("password_new", newPassword);
-
     setLoading(true);
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}edit-profile.php`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+    profileService
+      .adminChangePassword({
+        user_id: editingUser.user_id,
+        role: selectedRole,
+        password_new: newPassword,
       })
       .then((res) => {
-        if (res.data.success) {
+        if (res.success) {
           alert("密码更新成功");
           setEditingUser(null);
         } else {
-          alert(res.data.message || "更新失败");
+          alert(res.message || "更新失败");
         }
       })
       .catch((err) => alert(err))

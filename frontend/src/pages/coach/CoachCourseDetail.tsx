@@ -1,11 +1,14 @@
-import { MdArrowBack } from "react-icons/md";
+﻿import { MdArrowBack } from "react-icons/md";
 import { useAppContext } from "../../contexts/AppContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
-import axios from "axios";
 import styles from "./CoachCourseDetail.module.css";
 import { useTranslation } from "react-i18next";
+import { coachService } from "../../api/services/coachService";
+import { adminService } from "../../api/services/adminService";
+import type { Booking } from "../../api/types/booking";
+import type { Course } from "../../api/types/course";
 
 const stateLabelMap: Record<number, string> = {
   "-1": "课程已取消",
@@ -27,9 +30,9 @@ const CoachCourseDetail = () => {
     useAppContext();
   const navigate = useNavigate();
   const [bookPopupVisible, setBookPopupVisible] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
-  const [booked, setBooked] = useState<any[]>([]);
-  const [cancelStudents, setCancelStudents] = useState<any>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [booked, setBooked] = useState<Booking[]>([]);
+  const [cancelStudents, setCancelStudents] = useState<Booking | null>(null);
   const [totalBooked, setTotalBooked] = useState(0);
   const [cancelCoursePopupVisible, setCancelCoursePopupVisible] =
     useState(false);
@@ -46,18 +49,13 @@ const CoachCourseDetail = () => {
       return;
     }
     setLoading(true);
-    axios
-      .post(
-        `${import.meta.env.VITE_API_BASE_URL}/coach/coach-course-detail.php`,
-        {
-          course_id: selectedCourseId,
-        }
-      )
+    coachService
+      .getCourseDetail(selectedCourseId)
       .then((res) => {
-        setSelectedCourse(res.data.course);
-        setBooked(res.data.bookings);
-        const sum = res.data.bookings.reduce(
-          (acc: any, cur: any) => acc + cur.head_count,
+        setSelectedCourse(res.course);
+        setBooked(res.bookings);
+        const sum = res.bookings.reduce(
+          (acc: number, cur: Booking) => acc + (cur.head_count ?? 1),
           0
         );
         setTotalBooked(sum);
@@ -68,50 +66,34 @@ const CoachCourseDetail = () => {
   const handleStartCourse = async () => {
     if (!selectedCourseId) return;
     setLoading(true);
-    await axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/start-course.php`, {
-        course_id: selectedCourseId,
-      })
+    await adminService
+      .startCourse(selectedCourseId)
       .then((res) => {
-        if (res.data.success) {
+        if (res.success) {
           navigate("/admin_course");
         } else {
           alert("出错了");
         }
       });
     setLoading(false);
-    // setBookPopupVisible(false);
-    // 你可以显示“扣款完成”或刷新页面
-    // 建议重新请求当前课程详情数据
-    // window.location.reload(); // 或用 setRefresh
   };
 
   const handleCancel = async () => {
     if (!cancelStudents) return;
     setLoading(true);
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}admin/cancel-booking.php`,
-      {
-        booking_id: cancelStudents.id,
-      }
-    );
-
-    if (res.data.success) {
-    }
+    await adminService.cancelBooking(cancelStudents.id);
     setCancelStudents(null);
-    // 重新加载
     setBooked(booked.filter((b) => b.id !== cancelStudents.id));
     setLoading(false);
   };
 
   const handleRemoveCourse = async () => {
+    if (!selectedCourseId) return;
     setLoading(true);
-    await axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}admin/remove-course.php`, {
-        course_id: selectedCourseId,
-      })
+    await adminService
+      .deleteCourse(selectedCourseId)
       .then((res) => {
-        alert(res.data.message);
+        alert(res.message);
       });
     setLoading(false);
   };
@@ -357,7 +339,6 @@ const CoachCourseDetail = () => {
               <button
                 style={{ background: "#f33" }}
                 onClick={async () => {
-                  // 调用后端 remove-course.php 或 cancel-course.php
                   if (!window.confirm("确认移除课程及所有预约？")) return;
                   await handleRemoveCourse();
                   setCancelCoursePopupVisible(false);
@@ -369,7 +350,6 @@ const CoachCourseDetail = () => {
               <button
                 style={{ background: "#fe9" }}
                 onClick={async () => {
-                  // 强制调用 start-course.php（无视人数）
                   if (!window.confirm("确认强制开始课程并自动扣款吗？")) return;
                   await handleStartCourse();
                   setCancelCoursePopupVisible(false);

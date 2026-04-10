@@ -4,9 +4,9 @@ import styles from "./Login.module.css";
 import { useAppContext } from "../../contexts/AppContext";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import PhoneInput from "react-phone-number-input/input";
-import axios from "axios";
 import { CgClose } from "react-icons/cg";
 import { useTranslation } from "react-i18next";
+import { authService } from "../../api/services/authService";
 
 const Login = () => {
   const { t } = useTranslation("login");
@@ -17,7 +17,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   // const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,20 +31,14 @@ const Login = () => {
       return;
     }
 
-    const formData = {
-      phone,
-      password,
-    };
     setLoading(true);
     try {
-      const res = await axios.post(`${baseUrl}auth-login.php`, formData, {
-        withCredentials: true, // ✅ 必须加这个，才能存 session
-      });
-
-      if (res.data.success) {
-        setUser(res.data.profile);
+      const res = await authService.login({ phone, password });
+      if (res.success) {
+        console.log("Login successful", res);
+        setUser(res.profile);
       } else {
-        setError(res.data.message);
+        setError(res.message ?? "");
       }
     } catch (err: any) {
       setError(err.message);

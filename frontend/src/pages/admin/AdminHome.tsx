@@ -1,15 +1,16 @@
 // src/pages/AdminHome.tsx
-import axios from "axios";
 import "./AdminHome.css";
 import { FaUser, FaCalendarCheck, FaWallet } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
 import { useNavigate } from "react-router-dom";
+import { adminService } from "../../api/services/adminService";
+import type { AdminHomeData } from "../../api/types/admin";
 
 const AdminHome = () => {
   const { user, setLoading } = useAppContext();
   const navigate = useNavigate();
-  const [homeData, setHomeData] = useState<any>(null);
+  const [homeData, setHomeData] = useState<AdminHomeData | null>(null);
 
   useEffect(() => {
     if (user?.role !== "admin") {
@@ -26,11 +27,9 @@ const AdminHome = () => {
 
   useEffect(() => {
     setLoading(true);
-    axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}admin/home-data.php`)
-      .then((res) => {
-        setHomeData(res.data.data);
-      })
+    adminService
+      .getHomeData()
+      .then((data) => setHomeData(data))
       .finally(() => setLoading(false));
   }, []);
 

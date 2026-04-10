@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./AdminMember.module.css";
-import axios from "axios";
 import clsx from "clsx";
 import EditingUser from "../../components/admin/EditingUser";
 import popupStyle from "../../components/admin/EditingUser.module.css";
 import { useAppContext } from "../../contexts/AppContext";
 import { useNavigate } from "react-router-dom";
 import ChargeMember from "../../components/admin/ChargeMember";
+import { adminService } from "../../api/services/adminService";
+import type { CoachCourse } from "../../api/types/admin";
 
 const filter = [
   { name: "名字", value: "name" },
@@ -34,7 +35,7 @@ const AdminMember = () => {
     coach_id: number;
   }>(null);
 
-  const [coachCourses, setCoachCourses] = useState<any[]>([]);
+  const [coachCourses, setCoachCourses] = useState<CoachCourse[]>([]);
   const [loadingCoachCourse, setLoadingCoachCourse] = useState(false);
 
   useEffect(() => {
@@ -57,16 +58,13 @@ const AdminMember = () => {
     if (!viewCoachCourse) return;
     setLoadingCoachCourse(true);
     setLoading(true);
-    axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}admin/get-coach-courses.php`, {
-        params: {
-          year: viewCoachCourse.year,
-          month: viewCoachCourse.month,
-          coach_id: viewCoachCourse.coach_id,
-        },
+    adminService
+      .getCoachCourses(viewCoachCourse.coach_id, {
+        year: viewCoachCourse.year,
+        month: viewCoachCourse.month,
       })
       .then((res) => {
-        setCoachCourses(res.data.data.courses || []);
+        setCoachCourses(res.courses ?? []);
       })
       .catch(() => {
         setCoachCourses([]);
@@ -90,29 +88,17 @@ const AdminMember = () => {
   useEffect(() => {
     setLoading(true);
     if (selectedRole === "student") {
-      axios
-        .get(`${import.meta.env.VITE_API_BASE_URL}admin/get-student.php`, {})
-        .then((res) => {
-          setAllUsers(res.data.data);
-        })
-        .catch(() => {
-          alert("获取学生列表失败");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      adminService
+        .getStudents()
+        .then((data) => setAllUsers(data))
+        .catch(() => alert("获取学生列表失败"))
+        .finally(() => setLoading(false));
     } else if (selectedRole === "coach") {
-      axios
-        .get(`${import.meta.env.VITE_API_BASE_URL}admin/get-coach.php`, {})
-        .then((res) => {
-          setAllUsers(res.data.data);
-        })
-        .catch(() => {
-          alert("获取教师列表失败");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      adminService
+        .getCoaches()
+        .then((data) => setAllUsers(data))
+        .catch(() => alert("获取教师列表失败"))
+        .finally(() => setLoading(false));
     }
   }, [selectedRole, refresh]);
 

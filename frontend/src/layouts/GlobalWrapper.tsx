@@ -11,6 +11,7 @@ const GlobalWrapper = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("User state changed:", user);
     if (user != null) {
       switch (user.role) {
         case "admin":

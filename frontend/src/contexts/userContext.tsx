@@ -5,8 +5,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import axios from "axios";
 import { useAppContext } from "./AppContext";
+import { courseService } from "../api/services/courseService";
+import { bookingService } from "../api/services/bookingService";
+import { studentService } from "../api/services/studentService";
 
 const UserContext = createContext<any>(undefined);
 
@@ -20,37 +22,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (user && user.role === "admin") {
       return;
     }
-    axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}get-all-course.php`)
-      .then((res) => {
-        if (res.data.success) {
-          setCourses(res.data.courses);
-        }
-      })
-      .catch((err) => {
-        console.error("获取课程失败", err);
-      });
 
-    if (user && user.role != "admin") {
-      axios
-        .get(`${import.meta.env.VITE_API_BASE_URL}get-all-booking.php`)
-        .then((res) => {
-          if (res.data.success) {
-            setAllBookings(res.data.bookings);
-          }
-        });
+    courseService
+      .getAll()
+      .then((data) => setCourses(data))
+      .catch((err) => console.error("获取课程失败", err));
+
+    if (user && user.role !== "admin") {
+      bookingService
+        .getAll()
+        .then((data) => setAllBookings(data))
+        .catch((err) => console.error("获取预约失败", err));
     }
 
-    if (user && user.role == "student") {
-      axios
-        .post(`${import.meta.env.VITE_API_BASE_URL}get-student-card.php`, {
-          student_id: user.id,
-        })
-        .then((res) => {
-          if (res.data.success) {
-            setCards(res.data.cards);
-          }
-        });
+    if (user && user.role === "student") {
+      studentService
+        .getCards(user.id)
+        .then((data) => setCards(data))
+        .catch((err) => console.error("获取卡片失败", err));
     }
   }, [user]);
 

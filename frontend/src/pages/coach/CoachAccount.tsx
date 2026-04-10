@@ -8,11 +8,11 @@ import { PiPen } from "react-icons/pi";
 import AccountSetting from "../../components/AccountSetting";
 import clsx from "clsx";
 import { coach_rules_zh, coach_rules_en } from "../../assets/rules/rule";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
 import CourseCard from "../../components/CourseCard";
 import { useUserContext } from "../../contexts/UserContext";
 import { isThisMonthMY } from "../../ultis/timeCheck";
+import { coachService } from "../../api/services/coachService";
 
 const CoachAccount = () => {
   const { t, i18n } = useTranslation("account");
@@ -45,13 +45,11 @@ const CoachAccount = () => {
       return;
     }
     setLoading(true);
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}coach/coach-get-course.php`, {
-        user_id: user.id,
-      })
+    coachService
+      .getOverview(user.id)
       .then((res) => {
-        setClassCountThisMonth(res.data.classCountThisMonth);
-        setStudentCountThisMonth(res.data.studentCountThisMonth);
+        setClassCountThisMonth(res.classCountThisMonth);
+        setStudentCountThisMonth(res.studentCountThisMonth);
       })
       .catch((err) => alert("Error： " + err))
       .finally(() => setLoading(false));

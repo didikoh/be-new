@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import axios from "axios";
+import { authService } from "../api/services/authService";
 
 const AppContext = createContext<any>(undefined);
 
@@ -20,22 +20,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [promptMessage, setPromptMessage] = useState("");
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}auth-check.php`, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        setUser(res.data.profile);
-        setLoading(false);
-      })
+    authService
+      .check()
+      .then((res) => setUser(res.profile ?? null))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, [refreshKey]);
 
   const logout = async () => {
-    await axios.get(`${import.meta.env.VITE_API_BASE_URL}auth-logout.php`, {
-      withCredentials: true,
-    });
+    await authService.logout();
     setUser(null);
   };
 
