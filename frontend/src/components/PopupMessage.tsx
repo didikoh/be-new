@@ -1,18 +1,49 @@
+import { ReactNode, useEffect, useRef } from "react";
 import { CgClose } from "react-icons/cg";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaExclamationTriangle,
+  FaInfoCircle,
+} from "react-icons/fa";
 import styles from "./PopupMessage.module.css";
-import { useAppContext } from "../contexts/AppContext";
+import { ToastType } from "../contexts/AppContext";
 
-const PopupMessage = () => {
-  const { promptMessage, setPromptMessage } = useAppContext();
+interface PopupMessageProps {
+  message: string;
+  type?: ToastType;
+  duration?: number;
+  onClose: () => void;
+}
+
+const icons: Record<ToastType, ReactNode> = {
+  success: <FaCheckCircle />,
+  error: <FaTimesCircle />,
+  warning: <FaExclamationTriangle />,
+  info: <FaInfoCircle />,
+};
+
+const PopupMessage = ({
+  message,
+  type = "info",
+  duration = 3000,
+  onClose,
+}: PopupMessageProps) => {
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    const timer = setTimeout(() => onCloseRef.current(), duration);
+    return () => clearTimeout(timer);
+  }, [duration]);
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.container}>
-        <button className={styles.closeButton} onClick={setPromptMessage("")}>
-          <CgClose />
-        </button>
-        <div className={styles.message}>{promptMessage}</div>
-      </div>
+    <div className={`${styles.toast} ${styles[type]}`}>
+      <span className={styles.icon}>{icons[type]}</span>
+      <span className={styles.message}>{message}</span>
+      <button className={styles.closeButton} onClick={onClose}>
+        <CgClose />
+      </button>
     </div>
   );
 };

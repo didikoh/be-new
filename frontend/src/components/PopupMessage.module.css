@@ -1,37 +1,82 @@
-.overlay {
+.toast {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border-left: 4px solid;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  min-width: 280px;
+  max-width: 380px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.success {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #166534;
+}
+
+.error {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.warning {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.info {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  display: flex;
   align-items: center;
 }
 
-.container {
-  background-color: white;
-  padding: 24px 32px;
-  border-radius: 8px;
-  position: relative;
-  max-width: 400px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  text-align: center;
+.message {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .closeButton {
-  position: absolute;
-  top: 8px;
-  right: 12px;
   background: none;
   border: none;
-  font-size: 20px;
   cursor: pointer;
+  font-size: 15px;
+  padding: 0;
+  color: inherit;
+  opacity: 0.5;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
-.message {
-  font-size: 16px;
-  color: #333;
+.closeButton:hover {
+  opacity: 1;
 }

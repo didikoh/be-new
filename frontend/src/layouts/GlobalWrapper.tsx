@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAppContext } from "../contexts/AppContext";
 import Loading from "../components/Loading";
@@ -7,8 +7,9 @@ import PopupMessage from "../components/PopupMessage";
 
 const GlobalWrapper = () => {
   const { i18n } = useTranslation();
-  const { loading, user, setSelectedPage, promptMessage } = useAppContext();
+  const { loading, user, setSelectedPage, promptMessage, setPromptMessage } = useAppContext();
   const navigate = useNavigate();
+  const handlePromptClose = useCallback(() => setPromptMessage(null), []);
 
   useEffect(() => {
     console.log("User state changed:", user);
@@ -50,7 +51,13 @@ const GlobalWrapper = () => {
         Language
       </button>
       {loading && <Loading />}
-      {promptMessage != "" && <PopupMessage />}
+      {promptMessage != null && (
+        <PopupMessage
+          message={promptMessage.message}
+          type={promptMessage.type}
+          onClose={handlePromptClose}
+        />
+      )}
       <Outlet />
     </>
   );

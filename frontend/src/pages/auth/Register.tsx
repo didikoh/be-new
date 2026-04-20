@@ -14,7 +14,7 @@ import { authService } from "../../api/services/authService";
 const Register = () => {
   const { t } = useTranslation("login");
   const navigate = useNavigate();
-  const { setUser, setLoading } = useAppContext();
+  const { setUser, setLoading, setPromptMessage } = useAppContext();
   // 定义表单状态
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,23 +27,22 @@ const Register = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const Icon = show ? FaEye : FaEyeSlash;
   const Icon2 = show2 ? FaEye : FaEyeSlash;
-  const [responseMsg, setResponseMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!isValidPhoneNumber(phone)) {
-      alert(t("validatePhone"));
+      setPromptMessage({ message: t("validatePhone"), type: "error" });
       return;
     }
 
     if (password.length < 8) {
-      alert(t("validatePassword"));
+      setPromptMessage({ message: t("validatePassword"), type: "error" });
       return;
     }
 
     if (password !== password2) {
-      alert(t("register.validateConfirmPassword"));
+      setPromptMessage({ message: t("register.validateConfirmPassword"), type: "error" });
       return;
     }
 
@@ -59,10 +58,12 @@ const Register = () => {
       if (res.success) {
         setUser(res.profile);
       }
-      setResponseMsg(res.message ?? "");
+      if (res.message) {
+        setPromptMessage({ message: res.message, type: res.success ? "success" : "error" });
+      }
     } catch (err: any) {
       console.error(err);
-      setResponseMsg(err.message ?? "Network Error");
+      setPromptMessage({ message: err.message ?? "Network Error", type: "error" });
     }
     setLoading(false);
   };
@@ -162,7 +163,6 @@ const Register = () => {
             className={styles["form-input"]}
           />
           <button type="submit">{t("register.submit")}</button>
-          {responseMsg && <p className={styles["text-error"]}>{responseMsg}</p>}
         </form>
       </div>
     </div>

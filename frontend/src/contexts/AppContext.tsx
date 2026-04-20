@@ -7,6 +7,13 @@ import {
 } from "react";
 import { authService } from "../api/services/authService";
 
+export type ToastType = "success" | "error" | "warning" | "info";
+
+export interface PromptMessage {
+  message: string;
+  type?: ToastType;
+}
+
 const AppContext = createContext<any>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
@@ -17,7 +24,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [prevPage, setPrevPage] = useState("/home");
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [promptMessage, setPromptMessage] = useState("");
+  const [promptMessage, setPromptMessage] = useState<PromptMessage | null>(null);
 
   useEffect(() => {
     authService
