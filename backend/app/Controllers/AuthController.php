@@ -49,14 +49,60 @@ class AuthController extends Controller
             }
         }
 
-        $profilePicPath = $body['profile_pic'] ?? null;
+        $profilePicPath = null;
 
         $uploadedFiles = $request->getUploadedFiles();
-        if (isset($uploadedFiles['profile_pic']) && $uploadedFiles['profile_pic']->getError() === UPLOAD_ERR_OK) {
-            $profilePicPath = UploadHelper::store($uploadedFiles['profile_pic']);
+        error_log('[register] Content-Type: ' . $request->getHeaderLine('Content-Type'));
+        error_log('[register] uploaded file keys: ' . implode(', ', array_keys($uploadedFiles)));
+
+        if (isset($uploadedFiles['profile_pic'])) {
+            $file = $uploadedFiles['profile_pic'];
+            $uploadError = $file->getError();
+            error_log('[register] profile_pic error code: ' . $uploadError);
+
+            if ($uploadError !== UPLOAD_ERR_OK) {
+                $uploadErrorMessages = [
+                    UPLOAD_ERR_INI_SIZE   => 'File exceeds the server upload size limit (upload_max_filesize)',
+                    UPLOAD_ERR_FORM_SIZE  => 'File exceeds the form upload size limit',
+                    UPLOAD_ERR_PARTIAL    => 'File was only partially uploaded',
+                    UPLOAD_ERR_NO_FILE    => 'No file was received',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary upload folder on server',
+                    UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+                    UPLOAD_ERR_EXTENSION  => 'Upload blocked by a PHP extension',
+                ];
+                $errorMessage = $uploadErrorMessages[$uploadError] ?? "Avatar upload failed (PHP error code {$uploadError})";
+                return $this->respond($response, [
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'status' => 422,
+                ]);
+            }
+
+            try {
+                $profilePicPath = UploadHelper::store($file);
+                error_log('[register] avatar saved to: ' . $profilePicPath);
+            } catch (\Throwable $e) {
+                error_log('[register] UploadHelper::store failed: ' . $e->getMessage());
+                return $this->respond($response, [
+                    'success' => false,
+                    'message' => 'Avatar upload failed: ' . $e->getMessage(),
+                    'status' => 500,
+                ]);
+            }
+        } else {
+            error_log('[register] no profile_pic in uploaded files — registering without avatar');
         }
 
-        $result = $this->service->register($body, $profilePicPath);
+        try {
+            $result = $this->service->register($body, $profilePicPath);
+        } catch (\Throwable $e) {
+            return $this->respond($response, [
+                'success' => false,
+                'message' => 'Registration failed: ' . $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+
         return $this->respond($response, $result);
     }
 

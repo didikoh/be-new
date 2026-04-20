@@ -13,12 +13,9 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // const message =
-    //   error.response?.data?.message ?? error.message ?? "Network error";
-    // return Promise.reject(new Error(message));
-    console.error("API error status:", error.response?.status);
-    console.error("API error body:", error.response?.data);
-    return Promise.reject(error);
+    const message =
+      error.response?.data?.message ?? error.message ?? "Network error";
+    return Promise.reject(new Error(message));
   },
 );
 
