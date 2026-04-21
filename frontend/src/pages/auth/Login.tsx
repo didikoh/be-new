@@ -11,7 +11,7 @@ import { authService } from "../../api/services/authService";
 const Login = () => {
   const { t } = useTranslation("login");
   const navigate = useNavigate();
-  const { setUser, setSelectedPage, setLoading } = useAppContext();
+  const { setUser, setSelectedPage, setLoading, setPromptMessage } = useAppContext();
 
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -22,12 +22,12 @@ const Login = () => {
     e.preventDefault();
 
     if (!isValidPhoneNumber(phone)) {
-      alert(t("validatePhone"));
+      setPromptMessage({ message: t("validatePhone"), type: "error" });
       return;
     }
 
     if (password.length < 8) {
-      alert(t("validatePassword"));
+      setPromptMessage({ message: t("validatePassword"), type: "error" });
       return;
     }
 

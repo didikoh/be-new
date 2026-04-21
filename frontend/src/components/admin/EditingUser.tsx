@@ -16,7 +16,7 @@ const EditingUser = ({
   selectedRole,
   setRefresh,
 }: any) => {
-  const { setLoading } = useAppContext();
+  const { setLoading, setPromptMessage } = useAppContext();
   const [name, setName] = useState<any>(editingUser.name);
   const [phone, setPhone] = useState<any>(editingUser.phone);
   const [birthday, setBirthday] = useState<any>(editingUser.birthday);
@@ -32,11 +32,11 @@ const EditingUser = ({
   const handleSave = () => {
     if (editingUser.id) {
       if (name == "" || phone == "" || birthday == "") {
-        alert("请填写完整信息");
+        setPromptMessage({ message: "请填写完整信息", type: "warning" });
         return;
       }
       if (!isValidPhoneNumber(phone)) {
-        alert("请输入正确的电话号码！");
+        setPromptMessage({ message: "请输入正确的电话号码！", type: "warning" });
         return;
       }
 
@@ -54,10 +54,10 @@ const EditingUser = ({
             setRefresh((prev: any) => prev + 1);
             setEditingUser(null);
           } else {
-            alert(res.message);
+            setPromptMessage({ message: res.message, type: "error" });
           }
         })
-        .catch((err) => alert(err))
+        .catch((err) => setPromptMessage({ message: String(err), type: "error" }))
         .finally(() => setLoading(false));
     }
   };
@@ -71,21 +71,21 @@ const EditingUser = ({
           setRefresh((prev: any) => prev + 1);
           setEditingUser(null);
         } else {
-          alert(res.message);
+          setPromptMessage({ message: res.message, type: "error" });
         }
       })
-      .catch((err) => alert(err));
+      .catch((err) => setPromptMessage({ message: String(err), type: "error" }));
     setLoading(false);
   };
 
   const handleChangePassword = () => {
     if (newPassword.length < 8) {
-      alert("密码至少8位");
+      setPromptMessage({ message: "密码至少8位", type: "warning" });
       return;
     }
 
     if (newPassword !== newPassword2) {
-      alert("两次密码不一致");
+      setPromptMessage({ message: "两次密码不一致", type: "warning" });
       return;
     }
 
@@ -98,13 +98,13 @@ const EditingUser = ({
       })
       .then((res) => {
         if (res.success) {
-          alert("密码更新成功");
+          setPromptMessage({ message: "密码更新成功", type: "success" });
           setEditingUser(null);
         } else {
-          alert(res.message || "更新失败");
+          setPromptMessage({ message: res.message || "更新失败", type: "error" });
         }
       })
-      .catch((err) => alert(err))
+      .catch((err) => setPromptMessage({ message: String(err), type: "error" }))
       .finally(() => setLoading(false));
   };
 

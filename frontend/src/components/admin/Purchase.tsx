@@ -10,16 +10,16 @@ const Purchase = ({ setOpenPurchase }: any) => {
   const [payment, setPayment] = useState("");
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
-  const { setLoading } = useAppContext();
+  const { setLoading, setPromptMessage } = useAppContext();
   const [checked, setChecked] = useState(false);
 
   const handlePurchase = async () => {
     if (!phone || !payment) {
-      alert("请输入手机号和金额");
+      setPromptMessage({ message: "请输入手机号和金额", type: "warning" });
       return;
     }
     if (!isValidPhoneNumber(phone)) {
-      alert("请输入正确的电话号码！");
+      setPromptMessage({ message: "请输入正确的电话号码！", type: "warning" });
       return;
     }
 
@@ -33,17 +33,17 @@ const Purchase = ({ setOpenPurchase }: any) => {
       });
 
       if (res.success) {
-        alert("✅ 购买成功！");
+        setPromptMessage({ message: "✅ 购买成功！", type: "success" });
         setPhone("");
         setPayment("");
         setDescription("");
         setOpenPurchase(false);
       } else {
-        alert("❌ 错误：" + res.message);
+        setPromptMessage({ message: "❌ 错误：" + res.message, type: "error" });
       }
     } catch (error) {
       console.error("请求失败:", error);
-      alert("❌ 请求失败，请检查网络或服务器错误");
+      setPromptMessage({ message: "❌ 请求失败，请检查网络或服务器错误", type: "error" });
     }
 
     setLoading(false);
@@ -56,7 +56,7 @@ const Purchase = ({ setOpenPurchase }: any) => {
       setName(res.name ?? "");
       setChecked(true);
     } else {
-      alert(res.message);
+      setPromptMessage({ message: res.message, type: "error" });
     }
     setLoading(false);
   };

@@ -10,7 +10,7 @@ import { profileService } from "../api/services/profileService";
 
 const AccountSetting = ({ setSettingOpen }: any) => {
   const { t } = useTranslation("account");
-  const { user, setRefreshKey, logout, setLoading } = useAppContext();
+  const { user, setRefreshKey, logout, setLoading, setPromptMessage } = useAppContext();
   // 定义表单状态
   const [name, setName] = useState(user.name || "");
   const [birthday, setBirthday] = useState<Date | null>(
@@ -59,12 +59,12 @@ const AccountSetting = ({ setSettingOpen }: any) => {
   const handleSubmitPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (passwordOld.length < 8 || passwordNew.length < 8) {
-      alert(t("accountSetting.passwordTooShort"));
+      setPromptMessage({ message: t("accountSetting.passwordTooShort"), type: "error" });
       return;
     }
 
     if (passwordNew !== passwordNew2) {
-      alert(t("accountSetting.passwordMismatch"));
+      setPromptMessage({ message: t("accountSetting.passwordMismatch"), type: "error" });
       return;
     }
 
@@ -77,7 +77,7 @@ const AccountSetting = ({ setSettingOpen }: any) => {
         user_id: user.user_id,
       });
       if (res.success) {
-        alert(t("accountSetting.passwordChangeSuccess"));
+        setPromptMessage({ message: t("accountSetting.passwordChangeSuccess"), type: "success" });
         logout();
       } else {
         setResponseMsg(res.message ?? t("accountSetting.networkError"));

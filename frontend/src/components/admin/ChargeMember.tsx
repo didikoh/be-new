@@ -11,7 +11,7 @@ const ChargeMember = ({
   setChargingMember,
   setRefresh,
 }: any) => {
-  const { setLoading } = useAppContext();
+  const { setLoading, setPromptMessage } = useAppContext();
   const [chargeAmount, setChargeAmount] = useState<number>(0);
   const [chargePackage, setChargePackage] = useState<any>("");
   const [paymentValue, setPaymentValue] = useState<any>("");
@@ -28,7 +28,7 @@ const ChargeMember = ({
     setLoading(true);
 
     if (chargePackage != 1) {
-      alert("请先激活会员，才可以进行充值!");
+      setPromptMessage({ message: "请先激活会员，才可以进行充值!", type: "warning" });
       setLoading(false);
       return;
     }
@@ -45,11 +45,11 @@ const ChargeMember = ({
           setRefresh((prev: any) => prev + 1);
           setChargingMember(null);
         } else {
-          alert("充值失败" + res.message);
+          setPromptMessage({ message: "充值失败" + res.message, type: "error" });
         }
       })
       .catch(() => {
-        alert("充值失败");
+        setPromptMessage({ message: "充值失败", type: "error" });
       })
       .finally(() => {
         setLoading(false);

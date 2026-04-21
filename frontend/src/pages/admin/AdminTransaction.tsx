@@ -10,7 +10,7 @@ import { adminService } from "../../api/services/adminService";
 import type { Transaction } from "../../api/types/admin";
 
 const AdminTransaction: React.FC = () => {
-  const { setLoading, user } = useAppContext();
+  const { setLoading, user, setPromptMessage } = useAppContext();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const navigate = useNavigate();
   const [editingInvoice, setEditingInvoice] = useState<Transaction | null>(null);
@@ -47,12 +47,12 @@ const AdminTransaction: React.FC = () => {
     adminService
       .updateTransactionPayment(editingInvoice.transaction_id, { payment: paymentValue })
       .then((res) => {
-        alert(res.message);
+        setPromptMessage({ message: res.message, type: res.success ? "success" : "error" });
         if (res.success) {
           window.location.reload();
         }
       })
-      .catch((err) => alert(err));
+      .catch((err) => setPromptMessage({ message: String(err), type: "error" }));
   };
 
   return (

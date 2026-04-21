@@ -1,4 +1,4 @@
-﻿import { MdArrowBack } from "react-icons/md";
+import { MdArrowBack } from "react-icons/md";
 import { useAppContext } from "../../contexts/AppContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { coachService } from "../../api/services/coachService";
 import { adminService } from "../../api/services/adminService";
 import type { Booking } from "../../api/types/booking";
 import type { Course } from "../../api/types/course";
+import ConfirmationPopUp from "../../components/ConfirmationPopUp";
 
 const stateLabelMap: Record<number, string> = {
   "-1": "课程已取消",
@@ -26,7 +27,7 @@ const stateLabelMap2: Record<number, string> = {
 
 const CoachCourseDetail = () => {
   const { t, i18n } = useTranslation("detail");
-  const { user, selectedCourseId, prevPage, setSelectedPage, setLoading } =
+  const { user, selectedCourseId, prevPage, setSelectedPage, setLoading, setPromptMessage } =
     useAppContext();
   const navigate = useNavigate();
   const [bookPopupVisible, setBookPopupVisible] = useState(false);
@@ -36,6 +37,10 @@ const CoachCourseDetail = () => {
   const [totalBooked, setTotalBooked] = useState(0);
   const [cancelCoursePopupVisible, setCancelCoursePopupVisible] =
     useState(false);
+  const [confirmPopup, setConfirmPopup] = useState<{
+    message: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   const handleBackButtonClick = () => {
     navigate(prevPage);
@@ -72,7 +77,7 @@ const CoachCourseDetail = () => {
         if (res.success) {
           navigate("/admin_course");
         } else {
-          alert("出错了");
+          setPromptMessage({ message: "出错了", type: "error" });
         }
       });
     setLoading(false);
@@ -93,7 +98,7 @@ const CoachCourseDetail = () => {
     await adminService
       .deleteCourse(selectedCourseId)
       .then((res) => {
-        alert(res.message);
+        setPromptMessage({ message: res.message, type: res.success ? "success" : "error" });
       });
     setLoading(false);
   };
@@ -338,22 +343,30 @@ const CoachCourseDetail = () => {
             <div className={styles.popupBtns}>
               <button
                 style={{ background: "#f33" }}
-                onClick={async () => {
-                  if (!window.confirm("确认移除课程及所有预约？")) return;
-                  await handleRemoveCourse();
-                  setCancelCoursePopupVisible(false);
-                  navigate("/admin_course"); // 返回课程表或刷新
-                }}
+                onClick={() =>
+                  setConfirmPopup({
+                    message: "确认移除课程及所有预约？",
+                    onConfirm: async () => {
+                      await handleRemoveCourse();
+                      setCancelCoursePopupVisible(false);
+                      navigate("/admin_course");
+                    },
+                  })
+                }
               >
                 移除排程
               </button>
               <button
                 style={{ background: "#fe9" }}
-                onClick={async () => {
-                  if (!window.confirm("确认强制开始课程并自动扣款吗？")) return;
-                  await handleStartCourse();
-                  setCancelCoursePopupVisible(false);
-                }}
+                onClick={() =>
+                  setConfirmPopup({
+                    message: "确认强制开始课程并自动扣款吗？",
+                    onConfirm: async () => {
+                      await handleStartCourse();
+                      setCancelCoursePopupVisible(false);
+                    },
+                  })
+                }
               >
                 强制开始
               </button>
@@ -363,6 +376,16 @@ const CoachCourseDetail = () => {
             </div>
           </div>
         </div>
+      )}
+      {confirmPopup && (
+        <ConfirmationPopUp
+          message={confirmPopup.message}
+          onConfirm={async () => {
+            await confirmPopup.onConfirm();
+            setConfirmPopup(null);
+          }}
+          onCancel={() => setConfirmPopup(null)}
+        />
       )}
     </div>
   );

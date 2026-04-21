@@ -7,7 +7,7 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
 import { adminService } from "../../api/services/adminService";
 
 const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
-  const { setLoading } = useAppContext();
+  const { setLoading, setPromptMessage } = useAppContext();
   const [headCount, setHeadCount] = useState(0);
   const [selectedUserType, setSelectedUserType] = useState("Guest");
   const [phone, setPhone] = useState<any>("");
@@ -26,19 +26,19 @@ const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
         .walkIn({ course_id: selectedCourse.id, head_count: headCount })
         .then((res) => {
           if (res.success) {
-            alert("Walk In 成功");
+            setPromptMessage({ message: "Walk In 成功", type: "success" });
             fetchCourses();
             setWalkInOpen(false);
           } else {
-            alert(res.message);
+            setPromptMessage({ message: res.message, type: "error" });
           }
         })
         .catch((err) => {
-          alert(err);
+          setPromptMessage({ message: String(err), type: "error" });
         });
     } else {
       if (!isValidPhoneNumber(phone)) {
-        alert("请输入正确的电话号码！");
+        setPromptMessage({ message: "请输入正确的电话号码！", type: "warning" });
         setLoading(false);
         return;
       }
@@ -46,15 +46,15 @@ const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
         .bookByPhone({ phone, course_id: selectedCourse.id, head_count: headCount })
         .then((res) => {
           if (res.success) {
-            alert("新增报名成功");
+            setPromptMessage({ message: "新增报名成功", type: "success" });
             fetchCourses();
             setWalkInOpen(false);
           } else {
-            alert(res.message);
+            setPromptMessage({ message: res.message, type: "error" });
           }
         })
         .catch((err) => {
-          alert(err);
+          setPromptMessage({ message: String(err), type: "error" });
         });
     }
 
@@ -68,7 +68,7 @@ const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
       setName(res.name ?? "");
       setChecked(true);
     } else {
-      alert(res.message);
+      setPromptMessage({ message: res.message, type: "error" });
     }
     setLoading(false);
   };

@@ -16,7 +16,7 @@ const mockAvailableTimes = [
 const mockSite = ["舞蹈室 1", "舞蹈室 2", "舞蹈室 3", "舞蹈室 4"];
 
 const CoachSite = () => {
-  const { user } = useAppContext();
+  const { user, setPromptMessage } = useAppContext();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
@@ -34,9 +34,10 @@ const CoachSite = () => {
   };
 
   const handleConfirm = () => {
-    alert(
-      `✅ ${user} 成功预约了 ${selectedDate?.toLocaleDateString()} ${selectedTime}。\n理由: ${reason}`
-    );
+    setPromptMessage({
+      message: `✅ ${user} 成功预约了 ${selectedDate?.toLocaleDateString()} ${selectedTime}。理由: ${reason}`,
+      type: "success",
+    });
     setPopupVisible(false);
     setReason("");
   };

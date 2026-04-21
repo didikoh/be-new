@@ -40,6 +40,7 @@ const AdminCourse = () => {
     setSelectedCourseId,
     setLoading,
     setSelectedPage,
+    setPromptMessage,
   } = useAppContext();
   const [courses, setCourses] = useState<any>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -94,7 +95,7 @@ const AdminCourse = () => {
             coach_id: String(data[0].id),
           }));
         } else {
-          alert("请先添加教练");
+        setPromptMessage({ message: "请先添加教练", type: "warning" });
           navigate("/admin_member");
           setSelectedPage("admin_member");
         }
@@ -175,7 +176,7 @@ const AdminCourse = () => {
           setDeleteConfirm(false);
           handleClosePopup();
         } else {
-          alert(res.message);
+          setPromptMessage({ message: res.message, type: "error" });
         }
       });
     setLoading(false);

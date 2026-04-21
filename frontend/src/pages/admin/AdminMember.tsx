@@ -18,7 +18,7 @@ const filter = [
 ];
 
 const AdminMember = () => {
-  const { setLoading, user } = useAppContext();
+  const { setLoading, user, setPromptMessage } = useAppContext();
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<any>("student");
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -91,13 +91,13 @@ const AdminMember = () => {
       adminService
         .getStudents()
         .then((data) => setAllUsers(data))
-        .catch(() => alert("获取学生列表失败"))
+        .catch(() => setPromptMessage({ message: "获取学生列表失败", type: "error" }))
         .finally(() => setLoading(false));
     } else if (selectedRole === "coach") {
       adminService
         .getCoaches()
         .then((data) => setAllUsers(data))
-        .catch(() => alert("获取教师列表失败"))
+        .catch(() => setPromptMessage({ message: "获取教师列表失败", type: "error" }))
         .finally(() => setLoading(false));
     }
   }, [selectedRole, refresh]);

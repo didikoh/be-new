@@ -16,7 +16,7 @@ import { coachService } from "../../api/services/coachService";
 
 const CoachAccount = () => {
   const { t, i18n } = useTranslation("account");
-  const { user, logout, setPrevPage, setSelectedCourseId, setLoading } =
+  const { user, logout, setPrevPage, setSelectedCourseId, setLoading, setPromptMessage } =
     useAppContext();
   const { allBookings, courses } = useUserContext();
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ const CoachAccount = () => {
         setClassCountThisMonth(res.classCountThisMonth);
         setStudentCountThisMonth(res.studentCountThisMonth);
       })
-      .catch((err) => alert("Error： " + err))
+      .catch((err) => setPromptMessage({ message: "Error： " + String(err), type: "error" }))
       .finally(() => setLoading(false));
   }, [user]);
 

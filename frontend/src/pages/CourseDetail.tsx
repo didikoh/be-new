@@ -12,7 +12,7 @@ import { bookingService } from "../api/services/bookingService";
 
 const CourseDetail = () => {
   const { t } = useTranslation("detail");
-  const { selectedCourseId, user, prevPage, setRefreshKey, setLoading } =
+  const { selectedCourseId, user, prevPage, setRefreshKey, setLoading, setPromptMessage } =
     useAppContext();
   const { cards } = useUserContext();
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ const CourseDetail = () => {
 
   const handleBook = async () => {
     if (!user) {
-      alert(t("pleaseLogin"));
+      setPromptMessage({ message: t("pleaseLogin"), type: "error" });
       navigate("/login");
       return;
     }
@@ -73,7 +73,7 @@ const CourseDetail = () => {
     const availableBalance = card.balance - card.frozen_balance;
 
     if (availableBalance < totalPrice) {
-      alert(t("balanceNotEnough"));
+      setPromptMessage({ message: t("balanceNotEnough"), type: "warning" });
       return;
     }
 
@@ -84,13 +84,13 @@ const CourseDetail = () => {
         head_count: bookPeopleCount,
       });
       if (response.success) {
-        alert(t("bookingSuccess"));
+        setPromptMessage({ message: t("bookingSuccess"), type: "success" });
         setRefreshKey((prev: any) => prev + 1);
       } else {
-        alert(response.message);
+        setPromptMessage({ message: response.message, type: "error" });
       }
     } catch (error) {
-      alert(t("bookingFailed"));
+      setPromptMessage({ message: t("bookingFailed"), type: "error" });
     }
 
     setLoading(false);
