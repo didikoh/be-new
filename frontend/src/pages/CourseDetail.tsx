@@ -1,20 +1,26 @@
 import clsx from "clsx";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
+import { useNavigationStore } from "../stores/useNavigationStore";
+import { useDataStore } from "../stores/useDataStore";
 import { MdArrowBack } from "react-icons/md";
 import { useEffect, useState } from "react";
 import styles from "./CourseDetail.module.css";
 import { useNavigate } from "react-router-dom";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import { useUserContext } from "../contexts/UserContext";
 import { courseService } from "../api/services/courseService";
 import { bookingService } from "../api/services/bookingService";
 
 const CourseDetail = () => {
   const { t } = useTranslation("detail");
-  const { selectedCourseId, user, prevPage, setRefreshKey, setLoading, setPromptMessage } =
-    useAppContext();
-  const { cards } = useUserContext();
+  const selectedCourseId = useNavigationStore((s) => s.selectedCourseId);
+  const prevPage = useNavigationStore((s) => s.prevPage);
+  const user = useAuthStore((s) => s.user);
+  const checkAuth = useAuthStore((s) => s.checkAuth);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
+  const cards = useDataStore((s) => s.cards);
   const navigate = useNavigate();
   const [bookpopupVisible, setBookPopupVisible] = useState(false);
   const [bookPeopleCount, setBookPeopleCount] = useState(1);
@@ -85,7 +91,7 @@ const CourseDetail = () => {
       });
       if (response.success) {
         setPromptMessage({ message: t("bookingSuccess"), type: "success" });
-        setRefreshKey((prev: any) => prev + 1);
+        await checkAuth();
       } else {
         setPromptMessage({ message: response.message, type: "error" });
       }

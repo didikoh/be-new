@@ -2,13 +2,15 @@
 import "./AdminHome.css";
 import { FaUser, FaCalendarCheck, FaWallet } from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
 import { useNavigate } from "react-router-dom";
 import { adminService } from "../../api/services/adminService";
 import type { AdminHomeData } from "../../api/types/admin";
 
 const AdminHome = () => {
-  const { user, setLoading } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const setLoading = useUIStore((s) => s.setLoading);
   const navigate = useNavigate();
   const [homeData, setHomeData] = useState<AdminHomeData | null>(null);
 

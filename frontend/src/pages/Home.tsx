@@ -2,21 +2,26 @@ import { FaFacebook, FaPhone } from "react-icons/fa";
 import clsx from "clsx";
 import homeStyle from "./Home.module.css";
 import { ImInstagram } from "react-icons/im";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
+import { useNavigationStore } from "../stores/useNavigationStore";
+import { useDataStore } from "../stores/useDataStore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CourseCard from "../components/CourseCard";
-import { useUserContext } from "../contexts/UserContext";
 import { isSevenDaysMY, isTodayMY } from "../ultis/timeCheck";
 // import { useTranslation } from "react-i18next";
 
 const Home = () => {
   const { t } = useTranslation("home");
   const navigate = useNavigate();
-  const { user, setSelectedCourseId, setPrevPage, setLoading } =
-    useAppContext();
-  const { courses, allBookings } = useUserContext();
+  const user = useAuthStore((s) => s.user);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setSelectedCourseId = useNavigationStore((s) => s.setSelectedCourseId);
+  const setPrevPage = useNavigationStore((s) => s.setPrevPage);
+  const courses = useDataStore((s) => s.courses);
+  const allBookings = useDataStore((s) => s.allBookings);
   const [booked, SetBooked] = useState<any[]>([]);
   const [recommended, SetRecommended] = useState<any[]>([]);
 

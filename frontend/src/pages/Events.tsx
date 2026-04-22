@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import "./Events.css";
-import { useAppContext } from "../contexts/AppContext";
+import { useNavigationStore } from "../stores/useNavigationStore";
 import { mockEvents } from "../mocks/event";
 
 const Events = () => {
-  const {setSelectedEvent} = useAppContext();
+  const setSelectedEvent = useNavigationStore((s) => s.setSelectedEvent);
   const navigate = useNavigate();
 
   const handleMore = (item:any) => {

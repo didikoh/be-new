@@ -7,10 +7,10 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import styles from "./PopupMessage.module.css";
-import { ToastType } from "../contexts/AppContext";
+import { ToastType } from "../stores/useUIStore";
 
 interface PopupMessageProps {
-  message: string;
+  message?: string;
   type?: ToastType;
   duration?: number;
   onClose: () => void;
@@ -40,7 +40,7 @@ const PopupMessage = ({
   return (
     <div className={`${styles.toast} ${styles[type]}`}>
       <span className={styles.icon}>{icons[type]}</span>
-      <span className={styles.message}>{message}</span>
+      <span className={styles.message}>{message ?? ""}</span>
       <button className={styles.closeButton} onClick={onClose}>
         <CgClose />
       </button>

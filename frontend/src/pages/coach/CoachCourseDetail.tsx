@@ -1,5 +1,7 @@
 import { MdArrowBack } from "react-icons/md";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
+import { useNavigationStore } from "../../stores/useNavigationStore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
@@ -27,8 +29,12 @@ const stateLabelMap2: Record<number, string> = {
 
 const CoachCourseDetail = () => {
   const { t, i18n } = useTranslation("detail");
-  const { user, selectedCourseId, prevPage, setSelectedPage, setLoading, setPromptMessage } =
-    useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const selectedCourseId = useNavigationStore((s) => s.selectedCourseId);
+  const prevPage = useNavigationStore((s) => s.prevPage);
+  const setSelectedPage = useUIStore((s) => s.setSelectedPage);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const navigate = useNavigate();
   const [bookPopupVisible, setBookPopupVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);

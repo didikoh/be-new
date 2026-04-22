@@ -2,7 +2,8 @@
 import { FaHome, FaClock, FaUser, FaCalendar, FaWallet } from "react-icons/fa";
 import "./BottomNavBar.css";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 import { GrYoga } from "react-icons/gr";
 import { MdClass } from "react-icons/md";
 import { useTranslation } from "react-i18next";
@@ -10,8 +11,9 @@ import { useTranslation } from "react-i18next";
 const BottomNavBar = () => {
   const { t } = useTranslation("nav");
   const navigate = useNavigate();
-  const { user } = useAppContext();
-  const { selectedPage, setSelectedPage } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const selectedPage = useUIStore((s) => s.selectedPage);
+  const setSelectedPage = useUIStore((s) => s.setSelectedPage);
 
   const navItems = [
     { label: t("home"), icon: <FaHome />, value: "home", role: "student" },

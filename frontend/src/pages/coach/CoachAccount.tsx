@@ -1,5 +1,8 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
+import { useNavigationStore } from "../../stores/useNavigationStore";
+import { useDataStore } from "../../stores/useDataStore";
 import { useEffect, useState } from "react";
 import { LuLogOut } from "react-icons/lu";
 import { CgClose } from "react-icons/cg";
@@ -10,15 +13,19 @@ import clsx from "clsx";
 import { coach_rules_zh, coach_rules_en } from "../../assets/rules/rule";
 import { useTranslation } from "react-i18next";
 import CourseCard from "../../components/CourseCard";
-import { useUserContext } from "../../contexts/UserContext";
 import { isThisMonthMY } from "../../ultis/timeCheck";
 import { coachService } from "../../api/services/coachService";
 
 const CoachAccount = () => {
   const { t, i18n } = useTranslation("account");
-  const { user, logout, setPrevPage, setSelectedCourseId, setLoading, setPromptMessage } =
-    useAppContext();
-  const { allBookings, courses } = useUserContext();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
+  const setSelectedCourseId = useNavigationStore((s) => s.setSelectedCourseId);
+  const setPrevPage = useNavigationStore((s) => s.setPrevPage);
+  const courses = useDataStore((s) => s.courses);
+  const allBookings = useDataStore((s) => s.allBookings);
   const navigate = useNavigate();
   const [filterValue, setFilterValue] = useState("0");
   const [ruleOpen, setRuleOpen] = useState(false);

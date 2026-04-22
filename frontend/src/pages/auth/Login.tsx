@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import styles from "./Login.module.css";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import PhoneInput from "react-phone-number-input/input";
 import { CgClose } from "react-icons/cg";
@@ -11,7 +12,10 @@ import { authService } from "../../api/services/authService";
 const Login = () => {
   const { t } = useTranslation("login");
   const navigate = useNavigate();
-  const { setUser, setSelectedPage, setLoading, setPromptMessage } = useAppContext();
+  const setUser = useAuthStore((s) => s.setUser);
+  const setSelectedPage = useUIStore((s) => s.setSelectedPage);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
 
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");

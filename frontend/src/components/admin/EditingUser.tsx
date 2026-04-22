@@ -2,7 +2,7 @@ import styles from "./EditingUser.module.css";
 import clsx from "clsx";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
 import { useEffect, useState } from "react";
-import { useAppContext } from "../../contexts/AppContext";
+import { useUIStore } from "../../stores/useUIStore";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import { parseISO, format } from "date-fns";
@@ -16,7 +16,8 @@ const EditingUser = ({
   selectedRole,
   setRefresh,
 }: any) => {
-  const { setLoading, setPromptMessage } = useAppContext();
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const [name, setName] = useState<any>(editingUser.name);
   const [phone, setPhone] = useState<any>(editingUser.phone);
   const [birthday, setBirthday] = useState<any>(editingUser.birthday);

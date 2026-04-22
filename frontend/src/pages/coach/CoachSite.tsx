@@ -3,7 +3,8 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./CoachSite.css";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
 
 const mockAvailableTimes = [
   "09:00 - 10:00",
@@ -16,7 +17,8 @@ const mockAvailableTimes = [
 const mockSite = ["舞蹈室 1", "舞蹈室 2", "舞蹈室 3", "舞蹈室 4"];
 
 const CoachSite = () => {
-  const { user, setPromptMessage } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);

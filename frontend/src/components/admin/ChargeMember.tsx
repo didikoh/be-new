@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import popupStyle from "./EditingUser.module.css";
-import { useAppContext } from "../../contexts/AppContext";
+import { useUIStore } from "../../stores/useUIStore";
 import clsx from "clsx";
 import DatePicker from "react-datepicker";
 import { parseISO, format } from "date-fns";
@@ -11,7 +11,8 @@ const ChargeMember = ({
   setChargingMember,
   setRefresh,
 }: any) => {
-  const { setLoading, setPromptMessage } = useAppContext();
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const [chargeAmount, setChargeAmount] = useState<number>(0);
   const [chargePackage, setChargePackage] = useState<any>("");
   const [paymentValue, setPaymentValue] = useState<any>("");

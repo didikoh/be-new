@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 
 const Construction = () => {
   const navigate = useNavigate();
-  const { userRole,setSelectedPage } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const setSelectedPage = useUIStore((s) => s.setSelectedPage);
 
   const handleBack = () => {
-    switch (userRole) {
+    switch (user?.role) {
       case "student":
         navigate("/Home");
         setSelectedPage("home");

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./EditingUser.module.css";
 import clsx from "clsx";
-import { useAppContext } from "../../contexts/AppContext";
+import { useUIStore } from "../../stores/useUIStore";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
 import { adminService } from "../../api/services/adminService";
 
@@ -10,7 +10,8 @@ const Purchase = ({ setOpenPurchase }: any) => {
   const [payment, setPayment] = useState("");
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
-  const { setLoading, setPromptMessage } = useAppContext();
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const [checked, setChecked] = useState(false);
 
   const handlePurchase = async () => {

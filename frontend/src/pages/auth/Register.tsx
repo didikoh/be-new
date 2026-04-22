@@ -5,7 +5,8 @@ import { useRef, useState } from "react";
 import PhoneInput from "react-phone-number-input/input";
 import { isValidPhoneNumber } from "react-phone-number-input/input";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
 import { useTranslation } from "react-i18next";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
@@ -14,7 +15,9 @@ import { authService } from "../../api/services/authService";
 const Register = () => {
   const { t } = useTranslation("login");
   const navigate = useNavigate();
-  const { setUser, setLoading, setPromptMessage } = useAppContext();
+  const setUser = useAuthStore((s) => s.setUser);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   // 定义表单状态
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");

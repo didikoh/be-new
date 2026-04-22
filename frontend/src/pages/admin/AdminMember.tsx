@@ -3,7 +3,8 @@ import styles from "./AdminMember.module.css";
 import clsx from "clsx";
 import EditingUser from "../../components/admin/EditingUser";
 import popupStyle from "../../components/admin/EditingUser.module.css";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
 import { useNavigate } from "react-router-dom";
 import ChargeMember from "../../components/admin/ChargeMember";
 import { adminService } from "../../api/services/adminService";
@@ -18,7 +19,9 @@ const filter = [
 ];
 
 const AdminMember = () => {
-  const { setLoading, user, setPromptMessage } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<any>("student");
   const [allUsers, setAllUsers] = useState<any[]>([]);

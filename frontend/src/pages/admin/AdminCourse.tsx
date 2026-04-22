@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import styles from "./AdminCourse.module.css";
 import clsx from "clsx";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
+import { useNavigationStore } from "../../stores/useNavigationStore";
 import { useNavigate } from "react-router-dom";
 import { course_pics } from "../../assets/course/course";
 import DatePicker from "react-datepicker";
@@ -34,14 +36,12 @@ const formatStartTime = (start_time: string) => {
 
 const AdminCourse = () => {
   const navigate = useNavigate();
-  const {
-    user,
-    setPrevPage,
-    setSelectedCourseId,
-    setLoading,
-    setSelectedPage,
-    setPromptMessage,
-  } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setSelectedPage = useUIStore((s) => s.setSelectedPage);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
+  const setPrevPage = useNavigationStore((s) => s.setPrevPage);
+  const setSelectedCourseId = useNavigationStore((s) => s.setSelectedCourseId);
   const [courses, setCourses] = useState<any>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [courseForm, setCourseForm] = useState({

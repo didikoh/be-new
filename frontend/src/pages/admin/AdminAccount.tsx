@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import styles from "./AdminAccount.module.css";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 
 const AdminAccount: React.FC = () => {
-  const { user, logout } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
   useEffect(() => {

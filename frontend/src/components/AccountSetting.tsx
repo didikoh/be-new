@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react";
 import { CgClose } from "react-icons/cg";
 import styles from "./AccountSetting.module.css";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import "react-datepicker/dist/react-datepicker.css";
@@ -10,7 +11,11 @@ import { profileService } from "../api/services/profileService";
 
 const AccountSetting = ({ setSettingOpen }: any) => {
   const { t } = useTranslation("account");
-  const { user, setRefreshKey, logout, setLoading, setPromptMessage } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const checkAuth = useAuthStore((s) => s.checkAuth);
+  const logout = useAuthStore((s) => s.logout);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   // 定义表单状态
   const [name, setName] = useState(user.name || "");
   const [birthday, setBirthday] = useState<Date | null>(
@@ -45,7 +50,7 @@ const AccountSetting = ({ setSettingOpen }: any) => {
       });
       if (res.success) {
         setSettingOpen(false);
-        setRefreshKey((prev: any) => prev + 1);
+        await checkAuth();
       } else {
         setResponseMsg(res.message ?? t("accountSetting.networkError"));
       }

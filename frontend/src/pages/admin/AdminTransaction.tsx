@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./AdminTransaction.module.css";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useUIStore } from "../../stores/useUIStore";
 import { useNavigate } from "react-router-dom";
 import popupStyle from "../../components/admin/EditingUser.module.css";
 import adminMemberStyles from "./AdminMember.module.css";
@@ -10,7 +11,9 @@ import { adminService } from "../../api/services/adminService";
 import type { Transaction } from "../../api/types/admin";
 
 const AdminTransaction: React.FC = () => {
-  const { setLoading, user, setPromptMessage } = useAppContext();
+  const user = useAuthStore((s) => s.user);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const navigate = useNavigate();
   const [editingInvoice, setEditingInvoice] = useState<Transaction | null>(null);

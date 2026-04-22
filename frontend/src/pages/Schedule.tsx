@@ -2,19 +2,24 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import styles from "./Schedule.module.css";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
+import { useNavigationStore } from "../stores/useNavigationStore";
+import { useDataStore } from "../stores/useDataStore";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import CourseCard from "../components/CourseCard";
-import { useUserContext } from "../contexts/UserContext";
 import { isSevenDaysMY } from "../ultis/timeCheck";
 
 const Schedule = () => {
   const navigate = useNavigate();
   const { t } = useTranslation("schedule");
-  const { user, setSelectedCourseId, setPrevPage, setLoading } =
-    useAppContext();
-  const { courses, allBookings } = useUserContext();
+  const user = useAuthStore((s) => s.user);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setSelectedCourseId = useNavigationStore((s) => s.setSelectedCourseId);
+  const setPrevPage = useNavigationStore((s) => s.setPrevPage);
+  const courses = useDataStore((s) => s.courses);
+  const allBookings = useDataStore((s) => s.allBookings);
   const [allcourses, setAllCourses] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
 

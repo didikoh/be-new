@@ -1,6 +1,9 @@
 import { useNavigate, Link } from "react-router-dom";
 import styles from "./Account.module.css";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useUIStore } from "../stores/useUIStore";
+import { useNavigationStore } from "../stores/useNavigationStore";
+import { useDataStore } from "../stores/useDataStore";
 import { LuLogOut } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { CgClose } from "react-icons/cg";
@@ -9,16 +12,20 @@ import { PiPen } from "react-icons/pi";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import CourseCard from "../components/CourseCard";
-import { useUserContext } from "../contexts/UserContext";
 import { rules_en, rules_zh } from "../assets/rules/rule";
 import { isThisWeekMY } from "../ultis/timeCheck";
 
 const Account = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation("account");
-  const { user, logout, setPrevPage, setSelectedCourseId, setLoading } =
-    useAppContext();
-  const { courses, allBookings, cards } = useUserContext();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPrevPage = useNavigationStore((s) => s.setPrevPage);
+  const setSelectedCourseId = useNavigationStore((s) => s.setSelectedCourseId);
+  const courses = useDataStore((s) => s.courses);
+  const allBookings = useDataStore((s) => s.allBookings);
+  const cards = useDataStore((s) => s.cards);
   const [filterValue, setFilterValue] = useState("booked");
   const [ruleOpen, setRuleOpen] = useState(false);
   const [settingOpen, setSettingOpen] = useState(false);

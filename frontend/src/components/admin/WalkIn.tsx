@@ -1,13 +1,14 @@
 import styles from "./EditingUser.module.css";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { useAppContext } from "../../contexts/AppContext";
+import { useUIStore } from "../../stores/useUIStore";
 import "react-datepicker/dist/react-datepicker.css";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input/input";
 import { adminService } from "../../api/services/adminService";
 
 const WalkIn = ({ selectedCourse, setWalkInOpen, fetchCourses }: any) => {
-  const { setLoading, setPromptMessage } = useAppContext();
+  const setLoading = useUIStore((s) => s.setLoading);
+  const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const [headCount, setHeadCount] = useState(0);
   const [selectedUserType, setSelectedUserType] = useState("Guest");
   const [phone, setPhone] = useState<any>("");

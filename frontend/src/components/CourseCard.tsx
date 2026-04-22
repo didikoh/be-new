@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import styles from "./CourseCard.module.css";
-import { useAppContext } from "../contexts/AppContext";
+import { useAuthStore } from "../stores/useAuthStore";
 
 interface CourseCardProps {
   name: string;
@@ -29,7 +29,7 @@ const CourseCard = ({
   bookBtnClickHandler,
 }: CourseCardProps) => {
   const { t } = useTranslation("courseCard");
-  const { user } = useAppContext();
+  const user = useAuthStore((s) => s.user);
   return (
     <div className={styles["course-card"]}>
       <img

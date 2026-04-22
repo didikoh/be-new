@@ -1,11 +1,11 @@
 import "./EventDetail.css";
 import { MdArrowBack } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../contexts/AppContext";
+import { useNavigationStore } from "../stores/useNavigationStore";
 
 const EventDetail = () => {
   const navigate = useNavigate();
-  const { selectedEvent } = useAppContext();
+  const selectedEvent = useNavigationStore((s) => s.selectedEvent);
   const handleBackButtonClick = () => {
     navigate("/event");
   };
