@@ -96,7 +96,8 @@ const CourseDetail = () => {
         setPromptMessage({ message: response.message, type: "error" });
       }
     } catch (error) {
-      setPromptMessage({ message: t("bookingFailed"), type: "error" });
+      const msg = error instanceof Error ? error.message : t("bookingFailed");
+      setPromptMessage({ message: msg, type: "error" });
     }
 
     setLoading(false);
