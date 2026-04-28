@@ -357,3 +357,68 @@ start-dev.bat
 - **`UserCard` model / student cards**: `UserCard.php` model exists and `studentService.getCards()` is implemented, but the exact card system (membership cards, class packs, etc.) business logic has not been fully read.
 - **`frozen_balance` field on `User`**: The `User` type has `frozen_balance` but its specific business meaning (reserved balance for frozen members?) is inferred, not confirmed.
 - **`Transaction` model / payment types**: The transaction system references `type: 'payment'` in `AdminService.php` but the full list of transaction types is unknown without reading `Transaction.php` fully.
+
+---
+
+## 12. Admin Pagination (Added)
+
+Server-side pagination was added to all large admin list endpoints. Data is no longer loaded all at once; the backend paginates and returns a standardized response shape.
+
+### Paginated response shape
+
+All affected admin list endpoints now return:
+
+```json
+{
+  "success": true,
+  "message": "...",
+  "data": {
+    "items": [],
+    "pagination": {
+      "page": 1,
+      "per_page": 10,
+      "total": 100,
+      "total_pages": 10,
+      "has_next": true,
+      "has_prev": false
+    }
+  }
+}
+```
+
+### Backend endpoints changed
+
+| Endpoint | Method | New query params |
+|----------|--------|------------------|
+| `GET /api/admin/courses` | GET | `page`, `per_page`, `search` (name + coach name), `date` (YYYY-MM-DD) |
+| `GET /api/admin/students` | GET | `page`, `per_page`, `search`, `search_by` (name/phone/both) |
+| `GET /api/admin/transactions` | GET | `page`, `per_page`, `search` (student name/phone), `type`, `from_date`, `to_date` |
+
+- `page` defaults to 1; `per_page` defaults to 10; clamped to max 100.
+- `AdminService.php` has two private helpers: `parsePaginationParams(array $params)` and `buildPagination(int $total, int $page, int $perPage)`.
+- The POST endpoint `POST /api/admin/transactions/query` is no longer used by the frontend for listing. The GET endpoint is used instead.
+
+### Frontend changes
+
+**New shared types** (`frontend/src/api/types/admin.ts`):
+- `PaginationMeta` — pagination metadata shape
+- `PaginatedResponse<T>` — typed wrapper `{ items: T[]; pagination: PaginationMeta }`
+- `AdminListParams` — common query params for list methods
+
+**New component** (`frontend/src/components/Pagination/Pagination.tsx`):
+- Reusable presentation-only component
+- Props: `pagination`, `onPageChange`, `onPerPageChange`, `disabled?`
+- Per-page options: 10, 20, 50, 100
+- Styled with `Pagination.module.css`
+
+**Frontend pages refactored**:
+- `AdminMember.tsx` — students list is paginated + server-side search (300ms debounce); coach list remains client-side (small dataset)
+- `AdminTransaction.tsx` — paginated + server-side search; replaced `window.location.reload()` with targeted `fetchTransactions()`
+- `AdminCourse.tsx` — paginated + server-side search/date filter; removed broken `filterType` dropdown
+
+### Known limitations / TODOs
+
+- Coach list in `AdminMember` is not paginated (coaches are few in practice)
+- `AdminAccount.tsx` has no table — no pagination needed
+- The `POST /api/admin/transactions/query` endpoint still exists in routes but is unused by the frontend
+

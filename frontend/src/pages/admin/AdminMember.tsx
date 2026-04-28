@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./AdminMember.module.css";
 import clsx from "clsx";
 import EditingUser from "../../components/admin/EditingUser";
@@ -8,14 +8,17 @@ import { useUIStore } from "../../stores/useUIStore";
 import { useNavigate } from "react-router-dom";
 import ChargeMember from "../../components/admin/ChargeMember";
 import { adminService } from "../../api/services/adminService";
-import type { CoachCourse } from "../../api/types/admin";
+import type { AdminStudent, AdminCoach, CoachCourse, PaginationMeta } from "../../api/types/admin";
+import Pagination from "../../components/Pagination/Pagination";
 
-const filter = [
+const studentFilterOptions = [
   { name: "名字", value: "name" },
   { name: "手机", value: "phone" },
-  { name: "积分", value: "point" },
-  { name: "余额", value: "balance" },
-  { name: "生日", value: "birthday" },
+];
+
+const coachFilterOptions = [
+  { name: "名字", value: "name" },
+  { name: "手机", value: "phone" },
 ];
 
 const AdminMember = () => {
@@ -23,21 +26,35 @@ const AdminMember = () => {
   const setLoading = useUIStore((s) => s.setLoading);
   const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<any>("student");
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("student");
   const [editingUser, setEditingUser] = useState<any>(null);
   const [chargingMember, setChargingMember] = useState<any>(null);
-
   const [refresh, setRefresh] = useState(0);
-  const [filterBy, setFilterBy] = useState<string>("name");
-  const [search, setSearch] = useState<string>("");
+
+  // Student pagination state
+  const [students, setStudents] = useState<AdminStudent[]>([]);
+  const [studentPagination, setStudentPagination] = useState<PaginationMeta | null>(null);
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentPerPage, setStudentPerPage] = useState(10);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [studentFilterBy, setStudentFilterBy] = useState("name");
+  const [studentLoading, setStudentLoading] = useState(false);
+
+  // Debounced search value for student API calls
+  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState("");
+
+  // Coach list state (few coaches — no pagination needed)
+  const [coaches, setCoaches] = useState<AdminCoach[]>([]);
+  const [coachSearch, setCoachSearch] = useState("");
+  const [coachFilterBy, setCoachFilterBy] = useState("name");
+  const [coachLoading, setCoachLoading] = useState(false);
+
   const [viewCoachCourse, setViewCoachCourse] = useState<null | {
     name: string;
     year: number;
     month: number;
     coach_id: number;
   }>(null);
-
   const [coachCourses, setCoachCourses] = useState<CoachCourse[]>([]);
   const [loadingCoachCourse, setLoadingCoachCourse] = useState(false);
 
@@ -46,6 +63,51 @@ const AdminMember = () => {
       navigate("/home");
     }
   }, []);
+
+  // Debounce student search 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedStudentSearch(studentSearch), 300);
+    return () => clearTimeout(timer);
+  }, [studentSearch]);
+
+  // Reset to page 1 when search/filterBy changes
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setStudentPage(1);
+  }, [debouncedStudentSearch, studentFilterBy]);
+
+  // Fetch students when pagination or search changes
+  useEffect(() => {
+    if (selectedRole !== "student") return;
+    setStudentLoading(true);
+    setLoading(true);
+    adminService
+      .getStudents({
+        page: studentPage,
+        per_page: studentPerPage,
+        search: debouncedStudentSearch || undefined,
+        search_by: debouncedStudentSearch ? studentFilterBy : undefined,
+      })
+      .then((res) => {
+        setStudents(res.items);
+        setStudentPagination(res.pagination);
+      })
+      .catch(() => setPromptMessage({ message: "获取学生列表失败", type: "error" }))
+      .finally(() => { setStudentLoading(false); setLoading(false); });
+  }, [selectedRole, studentPage, studentPerPage, debouncedStudentSearch, studentFilterBy, refresh]);
+
+  // Fetch coaches (no pagination)
+  useEffect(() => {
+    if (selectedRole !== "coach") return;
+    setCoachLoading(true);
+    setLoading(true);
+    adminService
+      .getCoaches()
+      .then((data) => setCoaches(data))
+      .catch(() => setPromptMessage({ message: "获取教师列表失败", type: "error" }))
+      .finally(() => { setCoachLoading(false); setLoading(false); });
+  }, [selectedRole, refresh]);
 
   const openCoachCoursePopup = (coachName: string, id: number) => {
     const now = new Date();
@@ -66,44 +128,20 @@ const AdminMember = () => {
         year: viewCoachCourse.year,
         month: viewCoachCourse.month,
       })
-      .then((res) => {
-        setCoachCourses(res.courses ?? []);
-      })
-      .catch(() => {
-        setCoachCourses([]);
-      })
-      .finally(() => {
-        setLoadingCoachCourse(false);
-        setLoading(false);
-      });
+      .then((res) => setCoachCourses(res.courses ?? []))
+      .catch(() => setCoachCourses([]))
+      .finally(() => { setLoadingCoachCourse(false); setLoading(false); });
   }, [viewCoachCourse]);
 
-  // 过滤成员
-  const filteredMembers = useMemo(() => {
-    if (!allUsers) return [];
-    return allUsers.filter((m: any) => {
-      if (!search) return true;
-      const value = m[filterBy as keyof typeof m];
-      return value?.toString().toLowerCase().includes(search.toLowerCase());
+  // Client-side filtered coaches
+  const filteredCoaches = useMemo(() => {
+    if (!coachSearch) return coaches;
+    const lower = coachSearch.toLowerCase();
+    return coaches.filter((c) => {
+      const value = c[coachFilterBy as keyof typeof c];
+      return value?.toString().toLowerCase().includes(lower);
     });
-  }, [allUsers, filterBy, search]);
-
-  useEffect(() => {
-    setLoading(true);
-    if (selectedRole === "student") {
-      adminService
-        .getStudents()
-        .then((data) => setAllUsers(data))
-        .catch(() => setPromptMessage({ message: "获取学生列表失败", type: "error" }))
-        .finally(() => setLoading(false));
-    } else if (selectedRole === "coach") {
-      adminService
-        .getCoaches()
-        .then((data) => setAllUsers(data))
-        .catch(() => setPromptMessage({ message: "获取教师列表失败", type: "error" }))
-        .finally(() => setLoading(false));
-    }
-  }, [selectedRole, refresh]);
+  }, [coaches, coachSearch, coachFilterBy]);
 
   const handleClosePopup = () => {
     setEditingUser(null);
@@ -111,23 +149,27 @@ const AdminMember = () => {
   };
 
   const handleAddNew = () => {
-    setEditingUser({
-      name: "",
-      phone: "",
-      birthday: "",
-      id: -1,
-      role: selectedRole,
-    });
-  };
-
-  const handleCharge = (member: any) => {
-    setChargingMember(member);
+    setEditingUser({ name: "", phone: "", birthday: "", id: -1, role: selectedRole });
   };
 
   const handleSetSelectedRole = (role: string) => {
     setSelectedRole(role);
-    setAllUsers([]);
+    setStudents([]);
+    setCoaches([]);
+    setStudentPage(1);
+    setStudentSearch("");
+    setCoachSearch("");
   };
+
+  // After delete/edit: if current page is empty, go back one page
+  const handleRefresh = () => {
+    if (selectedRole === "student" && students.length === 1 && studentPage > 1) {
+      setStudentPage((p) => p - 1);
+    } else {
+      setRefresh((r) => r + 1);
+    }
+  };
+
   return (
     <div className={styles["admin-member-container"]}>
       <div className={styles["admin-member-header"]}>
@@ -152,10 +194,14 @@ const AdminMember = () => {
         <div className={styles["member-filter-left"]}>
           <select
             className={styles["member-type-dropdown"]}
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value)}
+            value={selectedRole === "student" ? studentFilterBy : coachFilterBy}
+            onChange={(e) =>
+              selectedRole === "student"
+                ? setStudentFilterBy(e.target.value)
+                : setCoachFilterBy(e.target.value)
+            }
           >
-            {filter.map((f: any) => (
+            {(selectedRole === "student" ? studentFilterOptions : coachFilterOptions).map((f) => (
               <option key={f.value} value={f.value}>
                 {f.name}
               </option>
@@ -164,8 +210,12 @@ const AdminMember = () => {
           <input
             type="text"
             placeholder="搜索"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={selectedRole === "student" ? studentSearch : coachSearch}
+            onChange={(e) =>
+              selectedRole === "student"
+                ? setStudentSearch(e.target.value)
+                : setCoachSearch(e.target.value)
+            }
           />
         </div>
         <button className={styles["add-new-member"]} onClick={handleAddNew}>
@@ -190,37 +240,48 @@ const AdminMember = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredMembers &&
-                filteredMembers.map((user: any) => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.phone}</td>
-                    <td>{user.point || "-"}</td>
+              {studentLoading ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                    加载中...
+                  </td>
+                </tr>
+              ) : students.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                    暂无数据
+                  </td>
+                </tr>
+              ) : (
+                students.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.name}</td>
+                    <td>{u.phone}</td>
+                    <td>{u.point || "-"}</td>
                     <td>
-                      {user.balance
-                        ? ` ${user.balance} (${user.frozen_balance})`
-                        : "-"}
+                      {u.balance ? ` ${u.balance} (${u.frozen_balance})` : "-"}
                     </td>
-                    <td>{user.is_member == 1 ? "是" : "否"}</td>
-                    <td>{user.birthday}</td>
-                    <td>{user.valid_balance_to || "-"}</td>
-                    <td>{user.valid_to || "-"}</td>
+                    <td>{u.is_member == 1 ? "是" : "否"}</td>
+                    <td>{u.birthday}</td>
+                    <td>{u.valid_balance_to || "-"}</td>
+                    <td>{u.valid_to || "-"}</td>
                     <td style={{ display: "flex" }}>
                       <button
                         className={clsx(styles.btn, styles.edit)}
-                        onClick={() => setEditingUser(user)}
+                        onClick={() => setEditingUser(u)}
                       >
                         编辑
                       </button>
                       <button
                         className={clsx(styles.btn, styles.charge)}
-                        onClick={() => handleCharge(user)}
+                        onClick={() => setChargingMember(u)}
                       >
                         会员
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
             </tbody>
           </>
         ) : (
@@ -237,37 +298,58 @@ const AdminMember = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredMembers &&
-                filteredMembers.map((user: any) => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.phone}</td>
-                    <td>{user.birthday}</td>
-                    <td>{user.month_student_count}</td>
-                    <td>{user.month_course_count}</td>
-                    <td>{user.join_date || "-"}</td>
+              {coachLoading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                    加载中...
+                  </td>
+                </tr>
+              ) : filteredCoaches.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                    暂无数据
+                  </td>
+                </tr>
+              ) : (
+                filteredCoaches.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.name}</td>
+                    <td>{u.phone}</td>
+                    <td>{u.birthday}</td>
+                    <td>{u.month_student_count}</td>
+                    <td>{u.month_course_count}</td>
+                    <td>{u.join_date || "-"}</td>
                     <td style={{ display: "flex" }}>
                       <button
                         className={clsx(styles.btn, styles.edit)}
-                        onClick={() => setEditingUser(user)}
+                        onClick={() => setEditingUser(u)}
                       >
                         编辑
                       </button>{" "}
                       <button
                         className={clsx(styles.btn, styles.edit)}
-                        onClick={() => {
-                          openCoachCoursePopup(user.name, user.id);
-                        }} //查看该月的课程和对应人数
+                        onClick={() => openCoachCoursePopup(u.name, u.id)}
                       >
                         查看
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
             </tbody>
           </>
         )}
       </table>
+
+      {/* Pagination for students */}
+      {selectedRole === "student" && studentPagination && (
+        <Pagination
+          pagination={studentPagination}
+          onPageChange={setStudentPage}
+          onPerPageChange={(n) => { setStudentPerPage(n); setStudentPage(1); }}
+          disabled={studentLoading}
+        />
+      )}
 
       {/* 编辑弹窗 */}
       {editingUser && (
@@ -275,7 +357,7 @@ const AdminMember = () => {
           editingUser={editingUser}
           handleClosePopup={handleClosePopup}
           selectedRole={selectedRole}
-          setRefresh={setRefresh}
+          setRefresh={() => handleRefresh()}
           setEditingUser={setEditingUser}
         />
       )}
@@ -285,7 +367,7 @@ const AdminMember = () => {
         <ChargeMember
           chargingMember={chargingMember}
           setChargingMember={setChargingMember}
-          setRefresh={setRefresh}
+          setRefresh={() => handleRefresh()}
         />
       )}
 
@@ -298,40 +380,28 @@ const AdminMember = () => {
                 className={popupStyle["select-year-month"]}
                 value={viewCoachCourse.year}
                 onChange={(e) =>
-                  setViewCoachCourse((v) =>
-                    v ? { ...v, year: Number(e.target.value) } : v
-                  )
+                  setViewCoachCourse((v) => v ? { ...v, year: Number(e.target.value) } : v)
                 }
               >
-                {/* 只展示近3年，可根据需要扩展 */}
-                {[2023, 2024, 2025].map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
+                {[2023, 2024, 2025, 2026].map((y) => (
+                  <option key={y} value={y}>{y}</option>
                 ))}
               </select>
               <select
                 className={popupStyle["select-year-month"]}
                 value={viewCoachCourse.month}
                 onChange={(e) =>
-                  setViewCoachCourse((v) =>
-                    v ? { ...v, month: Number(e.target.value) } : v
-                  )
+                  setViewCoachCourse((v) => v ? { ...v, month: Number(e.target.value) } : v)
                 }
               >
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1} 月
-                  </option>
+                  <option key={i + 1} value={i + 1}>{i + 1} 月</option>
                 ))}
               </select>
               <button
                 type="button"
                 className={clsx(popupStyle.btn, popupStyle.confirm)}
-                onClick={() => {
-                  // 触发 useEffect
-                  setViewCoachCourse((v) => (v ? { ...v } : v));
-                }}
+                onClick={() => setViewCoachCourse((v) => (v ? { ...v } : v))}
               >
                 查询
               </button>
@@ -356,10 +426,7 @@ const AdminMember = () => {
                       <tr key={c.id}>
                         <td>{index + 1}</td>
                         <td>{c.name}</td>
-                        <td>
-                          {c.start_time &&
-                            c.start_time.slice(0, 16).replace("T", " ")}
-                        </td>
+                        <td>{c.start_time && c.start_time.slice(0, 16).replace("T", " ")}</td>
                         <td>{c.student_count}</td>
                       </tr>
                     ))}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./AdminTransaction.module.css";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useUIStore } from "../../stores/useUIStore";
@@ -8,41 +8,73 @@ import adminMemberStyles from "./AdminMember.module.css";
 import clsx from "clsx";
 import Purchase from "../../components/admin/Purchase";
 import { adminService } from "../../api/services/adminService";
-import type { Transaction } from "../../api/types/admin";
+import type { Transaction, PaginationMeta } from "../../api/types/admin";
+import Pagination from "../../components/Pagination/Pagination";
 
 const AdminTransaction: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const setLoading = useUIStore((s) => s.setLoading);
   const setPromptMessage = useUIStore((s) => s.setPromptMessage);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const navigate = useNavigate();
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [tableLoading, setTableLoading] = useState(false);
+
   const [editingInvoice, setEditingInvoice] = useState<Transaction | null>(null);
   const [paymentValue, setPaymentValue] = useState(0);
   const [selectedType, setSelectedType] = useState<string>("income");
   const [openPurchase, setOpenPurchase] = useState<boolean>(false);
 
   useEffect(() => {
-    if (user?.role !== "admin") {
-      navigate("/home");
-    }
+    if (user?.role !== "admin") navigate("/home");
   }, []);
 
+  // Debounce search 300ms
   useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Reset to page 1 when type or search changes
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setPage(1);
+  }, [selectedType, debouncedSearch]);
+
+  const fetchTransactions = useCallback(() => {
+    setTableLoading(true);
     setLoading(true);
     adminService
-      .queryTransactions({ type: selectedType })
-      .then((data) => setTransactions(data))
-      .finally(() => setLoading(false));
-  }, [selectedType]);
+      .queryTransactions({
+        type: selectedType,
+        page,
+        per_page: perPage,
+        search: debouncedSearch || undefined,
+      })
+      .then((res) => {
+        setTransactions(res.items);
+        setPagination(res.pagination);
+      })
+      .catch(() => setPromptMessage({ message: "获取交易记录失败", type: "error" }))
+      .finally(() => { setTableLoading(false); setLoading(false); });
+  }, [selectedType, page, perPage, debouncedSearch]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const GenerateInvoice = (id: number) => {
     window.open(adminService.getInvoiceUrl(id));
   };
 
   useEffect(() => {
-    if (editingInvoice) {
-      setPaymentValue(editingInvoice.payment);
-    }
+    if (editingInvoice) setPaymentValue(editingInvoice.payment);
   }, [editingInvoice]);
 
   const handleEditInvoice = () => {
@@ -52,7 +84,8 @@ const AdminTransaction: React.FC = () => {
       .then((res) => {
         setPromptMessage({ message: res.message, type: res.success ? "success" : "error" });
         if (res.success) {
-          window.location.reload();
+          setEditingInvoice(null);
+          fetchTransactions();
         }
       })
       .catch((err) => setPromptMessage({ message: String(err), type: "error" }));
@@ -64,25 +97,19 @@ const AdminTransaction: React.FC = () => {
         <h2>交易记录</h2>
         <div className={adminMemberStyles["admin-member-header-btns"]}>
           <button
-            className={
-              selectedType === "income" ? adminMemberStyles["active"] : ""
-            }
+            className={selectedType === "income" ? adminMemberStyles["active"] : ""}
             onClick={() => setSelectedType("income")}
           >
             收入
           </button>
           <button
-            className={
-              selectedType === "expense" ? adminMemberStyles["active"] : ""
-            }
+            className={selectedType === "expense" ? adminMemberStyles["active"] : ""}
             onClick={() => setSelectedType("expense")}
           >
             买课
           </button>
           <button
-            className={
-              selectedType === "purchase" ? adminMemberStyles["active"] : ""
-            }
+            className={selectedType === "purchase" ? adminMemberStyles["active"] : ""}
             onClick={() => setSelectedType("purchase")}
           >
             消费
@@ -90,17 +117,24 @@ const AdminTransaction: React.FC = () => {
         </div>
       </div>
 
-      {selectedType === "purchase" && (
-        <div className={adminMemberStyles["admin-member-filter"]}>
-          <div>{/*Empty here*/}</div>
+      <div className={adminMemberStyles["admin-member-filter"]}>
+        <div className={adminMemberStyles["member-filter-left"]}>
+          <input
+            type="text"
+            placeholder="搜索会员名/手机"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        {selectedType === "purchase" && (
           <button
             className={adminMemberStyles["add-new-member"]}
             onClick={() => setOpenPurchase(true)}
           >
             新增
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <table className={styles["transaction-table"]}>
         <thead>
@@ -119,35 +153,39 @@ const AdminTransaction: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {transactions.length > 0 &&
+          {tableLoading ? (
+            <tr>
+              <td colSpan={selectedType === "income" ? 8 : 7} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                加载中...
+              </td>
+            </tr>
+          ) : transactions.length === 0 ? (
+            <tr>
+              <td colSpan={selectedType === "income" ? 8 : 7} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                暂无数据
+              </td>
+            </tr>
+          ) : (
             transactions.map((t, index) => (
               <tr key={t.transaction_id}>
-                <td>{index}</td>
+                <td>{(page - 1) * perPage + index + 1}</td>
                 <td>{t.student_name}</td>
                 <td
                   className={(() => {
                     switch (t.type) {
-                      case "Top Up Package":
-                        return styles["income"];
-                      case "payment":
-                        return styles["expense"];
-                      case "purchase":
-                        return styles["expense"];
-                      default:
-                        return "";
+                      case "Top Up Package": return styles["income"];
+                      case "payment": return styles["expense"];
+                      case "purchase": return styles["expense"];
+                      default: return "";
                     }
                   })()}
                 >
                   {(() => {
                     switch (t.type) {
-                      case "Top Up Package":
-                        return "收入";
-                      case "payment":
-                        return "买课";
-                      case "purchase":
-                        return "消费";
-                      default:
-                        return "未知";
+                      case "Top Up Package": return "收入";
+                      case "payment": return "买课";
+                      case "purchase": return "消费";
+                      default: return "未知";
                     }
                   })()}
                 </td>
@@ -156,26 +194,18 @@ const AdminTransaction: React.FC = () => {
                 <td>{t.point || "-"}</td>
                 {selectedType === "expense" && <td>{t.head_count || "-"}</td>}
                 {selectedType === "expense" && (
-                  <td>
-                    {t.course_id ? `${t.course_name}（${t.start_time}）` : "-"}
-                  </td>
+                  <td>{t.course_id ? `${t.course_name}（${t.start_time}）` : "-"}</td>
                 )}
                 {selectedType === "purchase" && <td>{t.description}</td>}
                 <td>{t.time}</td>
                 {selectedType === "income" && (
                   <td>
-                    {t.type != "payment" && (
+                    {t.type !== "payment" && (
                       <>
-                        <button
-                          className={styles["btn-action"]}
-                          onClick={() => setEditingInvoice(t)}
-                        >
+                        <button className={styles["btn-action"]} onClick={() => setEditingInvoice(t)}>
                           修改
                         </button>
-                        <button
-                          className={styles["btn-action"]}
-                          onClick={() => GenerateInvoice(t.transaction_id)}
-                        >
+                        <button className={styles["btn-action"]} onClick={() => GenerateInvoice(t.transaction_id)}>
                           收据
                         </button>
                       </>
@@ -183,9 +213,19 @@ const AdminTransaction: React.FC = () => {
                   </td>
                 )}
               </tr>
-            ))}
+            ))
+          )}
         </tbody>
       </table>
+
+      {pagination && (
+        <Pagination
+          pagination={pagination}
+          onPageChange={setPage}
+          onPerPageChange={(n) => { setPerPage(n); setPage(1); }}
+          disabled={tableLoading}
+        />
+      )}
 
       {editingInvoice && (
         <div className={popupStyle["popup-overlay"]}>
@@ -203,7 +243,6 @@ const AdminTransaction: React.FC = () => {
                   required
                 />
               </div>
-
               <div className={popupStyle["popup-actions"]}>
                 <button
                   type="button"

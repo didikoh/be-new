@@ -17,6 +17,8 @@ import type {
   CreateUserRequest,
   UpdateUserRequest,
   UpdateTransactionPaymentRequest,
+  PaginatedResponse,
+  AdminListParams,
 } from "../types/admin";
 import type { CourseType } from "../types/course";
 
@@ -27,8 +29,8 @@ export const adminService = {
   },
 
   // Courses
-  getCourses(): Promise<AdminCourse[]> {
-    return apiClient.get(ADMIN.COURSES).then((r) => r.data.data?.courses ?? []);
+  getCourses(params?: AdminListParams & { date?: string }): Promise<PaginatedResponse<AdminCourse>> {
+    return apiClient.get(ADMIN.COURSES, { params }).then((r) => r.data.data);
   },
 
   getCourseTypes(): Promise<CourseType[]> {
@@ -74,8 +76,8 @@ export const adminService = {
   },
 
   // Students
-  getStudents(): Promise<AdminStudent[]> {
-    return apiClient.get(ADMIN.STUDENTS).then((r) => r.data.data ?? []);
+  getStudents(params?: AdminListParams): Promise<PaginatedResponse<AdminStudent>> {
+    return apiClient.get(ADMIN.STUDENTS, { params }).then((r) => r.data.data);
   },
 
   lookupStudent(data: StudentLookupRequest): Promise<{ success: boolean; name?: string; message?: string }> {
@@ -87,8 +89,8 @@ export const adminService = {
   },
 
   // Transactions
-  queryTransactions(params: { type: string }): Promise<Transaction[]> {
-    return apiClient.post(ADMIN.TRANSACTIONS_QUERY, params).then((r) => r.data.data ?? []);
+  queryTransactions(params?: AdminListParams & { type?: string }): Promise<PaginatedResponse<Transaction>> {
+    return apiClient.get(ADMIN.TRANSACTIONS, { params }).then((r) => r.data.data);
   },
 
   updateTransactionPayment(

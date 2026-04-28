@@ -22,7 +22,8 @@ class AdminController extends Controller
 
     public function courses(Request $request, Response $response): Response
     {
-        return $this->respond($response, $this->service->listCourses());
+        $query = $request->getQueryParams();
+        return $this->respond($response, $this->service->listCourses($query));
     }
 
     public function saveCourse(Request $request, Response $response): Response
@@ -84,7 +85,8 @@ class AdminController extends Controller
 
     public function students(Request $request, Response $response): Response
     {
-        return $this->respond($response, $this->service->listStudents());
+        $query = $request->getQueryParams();
+        return $this->respond($response, $this->service->listStudents($query));
     }
 
     public function studentLookup(Request $request, Response $response): Response
@@ -96,11 +98,11 @@ class AdminController extends Controller
 
     public function transactions(Request $request, Response $response): Response
     {
-        $query = $request->getQueryParams();
-        $body = array_trim((array) $request->getParsedBody());
-        $type = $query['type'] ?? ($body['type'] ?? null);
+        $query  = $request->getQueryParams();
+        $body   = array_trim((array) $request->getParsedBody());
+        $params = array_merge($body, $query); // query params take precedence
 
-        return $this->respond($response, $this->service->listTransactions($type));
+        return $this->respond($response, $this->service->listTransactions($params));
     }
 
     public function updateTransactionPayment(Request $request, Response $response, array $args): Response

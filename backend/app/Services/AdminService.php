@@ -68,21 +68,66 @@ class AdminService
         ];
     }
 
-    public function listCourses(): array
+    private function parsePaginationParams(array $params): array
     {
-        $courses = Capsule::table('course_session as c')
+        $page    = max(1, (int) ($params['page'] ?? 1));
+        $perPage = min(100, max(1, (int) ($params['per_page'] ?? 10)));
+        $search  = trim((string) ($params['search'] ?? ''));
+
+        return [$page, $perPage, $search];
+    }
+
+    private function buildPagination(int $total, int $page, int $perPage): array
+    {
+        $totalPages = $perPage > 0 ? (int) ceil($total / $perPage) : 1;
+
+        return [
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total'       => $total,
+            'total_pages' => $totalPages,
+            'has_next'    => $page < $totalPages,
+            'has_prev'    => $page > 1,
+        ];
+    }
+
+    public function listCourses(array $params = []): array
+    {
+        [$page, $perPage, $search] = $this->parsePaginationParams($params);
+        $date   = trim((string) ($params['date'] ?? ''));
+        $offset = ($page - 1) * $perPage;
+
+        $query = Capsule::table('course_session as c')
             ->leftJoin('coach_list as co', 'c.coach_id', '=', 'co.id')
-            ->leftJoin(Capsule::raw('(SELECT course_id, SUM(head_count) AS booking_count FROM course_booking WHERE status != \'cancelled\' GROUP BY course_id) AS b'), 'c.id', '=', 'b.course_id')
+            ->leftJoin(
+                Capsule::raw('(SELECT course_id, SUM(head_count) AS booking_count FROM course_booking WHERE status != \'cancelled\' GROUP BY course_id) AS b'),
+                'c.id', '=', 'b.course_id'
+            )
             ->where('c.state', '!=', -1)
-            ->orderBy('c.start_time', 'desc')
-            ->limit(100)
-            ->select('c.*', 'co.name as coach_name', Capsule::raw('IFNULL(b.booking_count, 0) AS booking_count'))
+            ->select('c.*', 'co.name as coach_name', Capsule::raw('IFNULL(b.booking_count, 0) AS booking_count'));
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('c.name', 'like', "%{$search}%")
+                  ->orWhere('co.name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $query->whereDate('c.start_time', $date);
+        }
+
+        $total   = $query->count();
+        $courses = $query->orderBy('c.start_time', 'desc')
+            ->offset($offset)
+            ->limit($perPage)
             ->get();
 
         return [
             'success' => true,
-            'data' => [
-                'courses' => $courses->toArray(),
+            'data'    => [
+                'items'      => $courses->toArray(),
+                'pagination' => $this->buildPagination($total, $page, $perPage),
             ],
         ];
     }
@@ -355,14 +400,17 @@ class AdminService
         ];
     }
 
-    public function listStudents(): array
+    public function listStudents(array $params = []): array
     {
-        $students = Capsule::table('student_list as s')
+        [$page, $perPage, $search] = $this->parsePaginationParams($params);
+        $searchBy = trim((string) ($params['search_by'] ?? ''));
+        $offset   = ($page - 1) * $perPage;
+
+        $query = Capsule::table('student_list as s')
             ->leftJoin('user_list as u', 's.user_id', '=', 'u.id')
             ->leftJoin('user_cards as c', 's.id', '=', 'c.student_id')
             ->leftJoin('card_types as t', 'c.card_type_id', '=', 't.id')
             ->where('u.state', '!=', -1)
-            ->orderBy('s.name', 'asc')
             ->select(
                 's.*',
                 'u.id as user_id',
@@ -380,12 +428,33 @@ class AdminService
                 'c.valid_to',
                 'c.created_at as card_created_at',
                 'c.updated_at as card_updated_at'
-            )
+            );
+
+        if ($search !== '') {
+            if ($searchBy === 'name') {
+                $query->where('s.name', 'like', "%{$search}%");
+            } elseif ($searchBy === 'phone') {
+                $query->where('u.phone', 'like', "%{$search}%");
+            } else {
+                $query->where(function ($q) use ($search) {
+                    $q->where('s.name', 'like', "%{$search}%")
+                      ->orWhere('u.phone', 'like', "%{$search}%");
+                });
+            }
+        }
+
+        $total    = $query->count();
+        $students = $query->orderBy('s.name', 'asc')
+            ->offset($offset)
+            ->limit($perPage)
             ->get();
 
         return [
             'success' => true,
-            'data' => $students->toArray(),
+            'data'    => [
+                'items'      => $students->toArray(),
+                'pagination' => $this->buildPagination($total, $page, $perPage),
+            ],
         ];
     }
 
@@ -415,18 +484,19 @@ class AdminService
         ];
     }
 
-    public function listTransactions(?string $typeParam): array
+    public function listTransactions(array $params): array
     {
-        $typeParam = $typeParam ?? '';
-        $type = $typeParam === 'income' ? 'Top Up Package' : ($typeParam === 'expense' ? 'payment' : 'purchase');
+        [$page, $perPage, $search] = $this->parsePaginationParams($params);
+        $offset = ($page - 1) * $perPage;
 
-        $transactions = Capsule::table('transaction_list as t')
+        $typeParam = $params['type'] ?? '';
+        $type      = $typeParam === 'income' ? 'Top Up Package' : ($typeParam === 'expense' ? 'payment' : 'purchase');
+
+        $query = Capsule::table('transaction_list as t')
             ->leftJoin('student_list as s', 't.student_id', '=', 's.id')
             ->leftJoin('course_session as c', 't.course_id', '=', 'c.id')
             ->where('t.state', '!=', -1)
             ->where('t.type', $type)
-            ->orderBy('t.id', 'desc')
-            ->limit(200)
             ->select(
                 't.id as transaction_id',
                 't.student_id',
@@ -442,12 +512,27 @@ class AdminService
                 't.time',
                 'c.name as course_name',
                 'c.start_time'
-            )
+            );
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('s.name', 'like', "%{$search}%")
+                  ->orWhere('s.phone', 'like', "%{$search}%");
+            });
+        }
+
+        $total        = $query->count();
+        $transactions = $query->orderBy('t.id', 'desc')
+            ->offset($offset)
+            ->limit($perPage)
             ->get();
 
         return [
             'success' => true,
-            'data' => $transactions->toArray(),
+            'data'    => [
+                'items'      => $transactions->toArray(),
+                'pagination' => $this->buildPagination($total, $page, $perPage),
+            ],
         ];
     }
 

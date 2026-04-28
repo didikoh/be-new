@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./AdminCourse.module.css";
 import clsx from "clsx";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -11,8 +11,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import WalkIn from "../../components/admin/WalkIn";
 import { toLocalYMD } from "../../ultis/timeCheck";
 import { adminService } from "../../api/services/adminService";
-
-const filter = [{ name: "课程", value: "course" }];
+import type { AdminCourse as AdminCourseType, PaginationMeta } from "../../api/types/admin";
+import Pagination from "../../components/Pagination/Pagination";
 
 const formatStartTime = (start_time: string) => {
   const dateObj = new Date(start_time); // 自动解析 "2025-05-15 06:23:00"
@@ -42,7 +42,13 @@ const AdminCourse = () => {
   const setPromptMessage = useUIStore((s) => s.setPromptMessage);
   const setPrevPage = useNavigationStore((s) => s.setPrevPage);
   const setSelectedCourseId = useNavigationStore((s) => s.setSelectedCourseId);
-  const [courses, setCourses] = useState<any>(null);
+
+  const [courses, setCourses] = useState<AdminCourseType[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [courseLoading, setCourseLoading] = useState(false);
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [courseForm, setCourseForm] = useState({
     name: "",
@@ -56,11 +62,11 @@ const AdminCourse = () => {
     duration: 0,
   });
 
-  const [coachList, setCoachList] = useState<any>([]);
+  const [coachList, setCoachList] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [filterDate, setFilterDate] = useState<Date | null>(null);
-  const [filterType, setFilterType] = useState("coach"); // 默认老师
   const [selectedTable, _setSelectedTable] = useState("dynamic");
   const [staticCourse, setStaticCourse] = useState<any>(null);
   const [selectedStaticCourse, setSelectedStaticCourse] = useState<any>(null);
@@ -68,21 +74,49 @@ const AdminCourse = () => {
   const [walkInCourse, setWalkInCourse] = useState<any>(null);
 
   useEffect(() => {
-    if (user?.role !== "admin") {
-      navigate("/home");
-    }
+    if (user?.role !== "admin") navigate("/home");
   }, []);
+
+  // Debounce keyword 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedKeyword(keyword), 300);
+    return () => clearTimeout(timer);
+  }, [keyword]);
+
+  // Reset to page 1 when filters change
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setPage(1);
+  }, [debouncedKeyword, filterDate]);
+
+  const fetchCourses = useCallback(() => {
+    setCourseLoading(true);
+    setLoading(true);
+    adminService
+      .getCourses({
+        page,
+        per_page: perPage,
+        search: debouncedKeyword || undefined,
+        date: filterDate ? toLocalYMD(filterDate) : undefined,
+      })
+      .then((res) => {
+        setCourses(res.items);
+        setPagination(res.pagination);
+      })
+      .catch(() => setPromptMessage({ message: "获取课程失败", type: "error" }))
+      .finally(() => { setCourseLoading(false); setLoading(false); });
+  }, [page, perPage, debouncedKeyword, filterDate]);
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
 
   useEffect(() => {
     setLoading(true);
-
     adminService
       .getCourseTypes()
-      .then((data) => {
-        if (data) {
-          setStaticCourse(data);
-        }
-      })
+      .then((data) => { if (data) setStaticCourse(data); })
       .finally(() => setLoading(false));
 
     adminService
@@ -90,30 +124,15 @@ const AdminCourse = () => {
       .then((data) => {
         setCoachList(data);
         if (data.length > 0) {
-          setCourseForm((prev) => ({
-            ...prev,
-            coach_id: String(data[0].id),
-          }));
+          setCourseForm((prev) => ({ ...prev, coach_id: String(data[0].id) }));
         } else {
-        setPromptMessage({ message: "请先添加教练", type: "warning" });
+          setPromptMessage({ message: "请先添加教练", type: "warning" });
           navigate("/admin_member");
           setSelectedPage("admin_member");
         }
       })
       .finally(() => setLoading(false));
-    fetchCourses();
   }, []);
-
-  const fetchCourses = async () => {
-    setLoading(true);
-    try {
-      const data = await adminService.getCourses();
-      setCourses(data);
-    } catch (err) {
-      console.error("获取课程失败", err);
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
     if (selectedStaticCourse && selectedStaticCourse != "") {
@@ -172,11 +191,16 @@ const AdminCourse = () => {
       .deleteCourse(editingId)
       .then((res) => {
         if (res.success) {
-          fetchCourses();
           setDeleteConfirm(false);
           handleClosePopup();
+          // Go back one page if last item on current page
+          if (courses.length === 1 && page > 1) {
+            setPage((p) => p - 1);
+          } else {
+            fetchCourses();
+          }
         } else {
-          setPromptMessage({ message: res.message, type: "error" });
+          setPromptMessage({ message: res.message ?? "删除失败", type: "error" });
         }
       });
     setLoading(false);
@@ -240,20 +264,9 @@ const AdminCourse = () => {
 
       <div className={styles["filter"]}>
         <div className={styles["filter-left"]}>
-          <select
-            className={styles["member-type-dropdown"]}
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            {filter.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.name}
-              </option>
-            ))}
-          </select>
           <input
             type="text"
-            placeholder="搜索"
+            placeholder="搜索课程/教练"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
@@ -264,6 +277,7 @@ const AdminCourse = () => {
             dateFormat="yyyy-MM-dd"
             placeholderText="选择日期"
             className={styles["form-input"]}
+            isClearable
           />
         </div>
 
@@ -292,101 +306,79 @@ const AdminCourse = () => {
               </tr>
             </thead>
             <tbody>
-              {courses &&
-                courses
-                  .filter((c: any) => {
-                    // 日期过滤
-                    const matchDate = filterDate
-                      ? c.start_time.startsWith(
-                          toLocalYMD(filterDate)
-                        )
-                      : true;
-
-                    // 关键字过滤，区分老师/课程
-                    let matchKeyword = true;
-                    if (keyword.trim()) {
-                      if (filterType === "coach") {
-                        matchKeyword = c.coach
-                          ?.toLowerCase()
-                          .includes(keyword.toLowerCase());
-                      } else if (filterType === "course") {
-                        matchKeyword = c.name
-                          ?.toLowerCase()
-                          .includes(keyword.toLowerCase());
-                      }
-                    }
-
-                    return matchKeyword && matchDate;
-                  })
-                  .map((c: any) => (
-                    <tr key={c.id}>
-                      <td>{c.name}</td>
-                      <td>
-                        {c.price}/{c.price_m}
-                      </td>
-                      <td>{c.min_book}</td>
-                      <td>{c.booking_count}</td>
-                      <td>{c.coach_name}</td>
-                      <td>{formatStartTime(c.start_time).dateStr}</td>
-                      <td>{formatStartTime(c.start_time).timeStr}</td>
-                      <td
-                        style={{
-                          color: (() => {
-                            switch (c.state) {
-                              case -1:
-                                return "#dc3545";
-                              case 0:
-                                return "#28a745";
-                              case 1:
-                                return "#ffc107";
-                              case 2:
-                                return "#6c757d";
-                              default:
-                                return "#000";
-                            }
-                          })(),
+              {courseLoading ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                    加载中...
+                  </td>
+                </tr>
+              ) : courses.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: "center", color: "#aaa", padding: 24 }}>
+                    暂无数据
+                  </td>
+                </tr>
+              ) : (
+                courses.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.name}</td>
+                    <td>
+                      {c.price}/{c.price_m}
+                    </td>
+                    <td>{c.min_book}</td>
+                    <td>{c.booking_count}</td>
+                    <td>{c.coach_name}</td>
+                    <td>{formatStartTime(c.start_time).dateStr}</td>
+                    <td>{formatStartTime(c.start_time).timeStr}</td>
+                    <td
+                      style={{
+                        color: (() => {
+                          switch (c.state) {
+                            case -1: return "#dc3545";
+                            case 0: return "#28a745";
+                            case 1: return "#ffc107";
+                            case 2: return "#6c757d";
+                            default: return "#000";
+                          }
+                        })(),
+                      }}
+                    >
+                      {(() => {
+                        switch (c.state) {
+                          case -1: return "已取消";
+                          case 0: return "已排程";
+                          case 1: return "已开始";
+                          case 2: return "已结束";
+                          default: return "Unknown";
+                        }
+                      })()}
+                    </td>
+                    <td className={styles["action-buttons"]}>
+                      <button
+                        className={clsx(styles.btn, styles.edit)}
+                        onClick={() => handleEdit(c)}
+                      >
+                        编辑
+                      </button>
+                      <button
+                        className={clsx(styles.btn, styles.edit)}
+                        onClick={() => handleView(c)}
+                      >
+                        查看
+                      </button>
+                      <button
+                        className={clsx(styles.btn, styles.edit)}
+                        onClick={() => {
+                          setWalkInCourse(c);
+                          setWalkInOpen(true);
                         }}
                       >
-                        {(() => {
-                          switch (c.state) {
-                            case -1:
-                              return "已取消";
-                            case 0:
-                              return "已排程";
-                            case 1:
-                              return "已开始";
-                            case 2:
-                              return "已结束";
-                            default:
-                              return "Unknown";
-                          }
-                        })()}
-                      </td>
-                      <td className={styles["action-buttons"]}>
-                        <button
-                          className={clsx(styles.btn, styles.edit)}
-                          onClick={() => handleEdit(c)}
-                        >
-                          编辑
-                        </button>
-                        <button
-                          className={clsx(styles.btn, styles.edit)}
-                          onClick={() => handleView(c)}
-                        >
-                          查看
-                        </button>
-                        <button
-                          className={clsx(styles.btn, styles.edit)}
-                          onClick={() => {
-                            setWalkInCourse(c);
-                            setWalkInOpen(true);
-                          }}
-                        >
-                          报名
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        报名
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </>
         ) : (
@@ -464,6 +456,15 @@ const AdminCourse = () => {
           </>
         )}
       </table>
+
+      {pagination && selectedTable === "dynamic" && (
+        <Pagination
+          pagination={pagination}
+          onPageChange={setPage}
+          onPerPageChange={(n) => { setPerPage(n); setPage(1); }}
+          disabled={courseLoading}
+        />
+      )}
 
       {editingId && (
         <div className={styles["popup-overlay"]}>

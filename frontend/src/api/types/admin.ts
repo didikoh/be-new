@@ -1,5 +1,27 @@
 import type { Course } from "./course";
 
+export interface PaginationMeta {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  pagination: PaginationMeta;
+}
+
+export interface AdminListParams {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  search_by?: string;
+  [key: string]: string | number | undefined;
+}
+
 export interface AdminHomeData {
   user_count: number;
   member_count: number;
