@@ -13,6 +13,14 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error("API Error Full Response:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers,
+      url: error.config?.url,
+      method: error.config?.method,
+    });
     const message =
       error.response?.data?.message ?? error.message ?? "Network error";
     return Promise.reject(new Error(message));
